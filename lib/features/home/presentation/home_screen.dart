@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../location/data/providers/mock_location_provider.dart';
+import '../../location/data/repositories/location_repository.dart';
 import '../../location/domain/extensions/location_data_extension.dart';
 
 import '../../prayer_times/data/providers/prayer_times_mock_provider.dart';
@@ -31,8 +32,12 @@ class HomeScreen extends StatelessWidget {
       DateTime.now(),
     );
 
+    final locationRepository = LocationRepository(
+      provider: const MockLocationProvider(),
+    );
+
     final location =
-        const MockLocationProvider().getLocation();
+        locationRepository.getCurrentLocation();
 
     return Scaffold(
       body: SafeArea(
@@ -67,10 +72,12 @@ class HomeScreen extends StatelessWidget {
                     child: Icon(
                       Icons.auto_awesome,
                       size: 160,
-                      color:
-                          Colors.white.withValues(alpha: 0.05),
+                      color: Colors.white.withValues(
+                        alpha: 0.05,
+                      ),
                     ),
                   ),
+
                   const Positioned(
                     top: 0,
                     right: 0,
@@ -80,6 +87,7 @@ class HomeScreen extends StatelessWidget {
                       size: 90,
                     ),
                   ),
+
                   const Positioned(
                     top: 35,
                     right: 120,
@@ -89,6 +97,7 @@ class HomeScreen extends StatelessWidget {
                       color: Colors.white24,
                     ),
                   ),
+
                   const Positioned(
                     top: 75,
                     right: 85,
@@ -98,6 +107,7 @@ class HomeScreen extends StatelessWidget {
                       color: Colors.white24,
                     ),
                   ),
+
                   const Positioned(
                     top: 55,
                     right: 150,
@@ -107,6 +117,7 @@ class HomeScreen extends StatelessWidget {
                       color: Colors.white24,
                     ),
                   ),
+
                   Column(
                     crossAxisAlignment:
                         CrossAxisAlignment.start,
@@ -179,8 +190,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color:
-                            Colors.black.withValues(
+                        color: Colors.black.withValues(
                           alpha: 0.08,
                         ),
                         blurRadius: 24,
