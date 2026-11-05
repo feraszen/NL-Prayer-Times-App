@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
 
+import '../../prayer_times/data/providers/prayer_times_mock_provider.dart';
+import '../../prayer_times/domain/extensions/prayer_type_extension.dart';
+import '../../prayer_times/domain/services/prayer_service.dart';
+
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
+
+    final prayerTimes =
+        const PrayerTimesMockProvider().getPrayerTimes();
+
+    final prayerService = const PrayerService();
+
+    final nextPrayer = prayerService.getNextPrayer(
+      prayerTimes,
+      DateTime.now(),
+    );
 
     return Scaffold(
       body: SafeArea(
@@ -40,9 +54,11 @@ class HomeScreen extends StatelessWidget {
                     child: Icon(
                       Icons.auto_awesome,
                       size: 160,
-                      color: Colors.white.withValues(alpha: 0.05),
+                      color:
+                          Colors.white.withValues(alpha: 0.05),
                     ),
                   ),
+
                   const Positioned(
                     top: 0,
                     right: 0,
@@ -52,6 +68,7 @@ class HomeScreen extends StatelessWidget {
                       size: 90,
                     ),
                   ),
+
                   const Positioned(
                     top: 35,
                     right: 120,
@@ -61,6 +78,7 @@ class HomeScreen extends StatelessWidget {
                       color: Colors.white24,
                     ),
                   ),
+
                   const Positioned(
                     top: 75,
                     right: 85,
@@ -70,6 +88,7 @@ class HomeScreen extends StatelessWidget {
                       color: Colors.white24,
                     ),
                   ),
+
                   const Positioned(
                     top: 55,
                     right: 150,
@@ -79,8 +98,10 @@ class HomeScreen extends StatelessWidget {
                       color: Colors.white24,
                     ),
                   ),
+
                   Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
                     children: [
                       const Text(
                         'St. John\'s, NL',
@@ -89,16 +110,21 @@ class HomeScreen extends StatelessWidget {
                           fontSize: 16,
                         ),
                       ),
+
                       const SizedBox(height: 12),
+
                       Text(
                         '12:45 PM',
                         style: TextStyle(
                           color: Colors.white,
-                          fontSize: screenWidth < 400 ? 38 : 50,
+                          fontSize:
+                              screenWidth < 400 ? 38 : 50,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
                       const SizedBox(height: 12),
+
                       const Text(
                         'Thursday, November 5, 2026',
                         style: TextStyle(
@@ -106,7 +132,9 @@ class HomeScreen extends StatelessWidget {
                           fontSize: 15,
                         ),
                       ),
+
                       const SizedBox(height: 4),
+
                       const Text(
                         '14 Jumada Al-Awwal 1448',
                         style: TextStyle(
@@ -115,13 +143,16 @@ class HomeScreen extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+
                       const SizedBox(height: 12),
+
                       Container(
                         width: 80,
                         height: 3,
                         decoration: BoxDecoration(
                           color: const Color(0xFFD4AF37),
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius:
+                              BorderRadius.circular(20),
                         ),
                       ),
                     ],
@@ -141,21 +172,25 @@ class HomeScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(18),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFAFBFD),
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius:
+                        BorderRadius.circular(24),
                     border: Border.all(
                       color: const Color(0xFFE8EEF7),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
+                        color:
+                            Colors.black.withValues(
+                          alpha: 0.08,
+                        ),
                         blurRadius: 24,
                         offset: const Offset(0, 8),
                       ),
                     ],
                   ),
-                  child: const Column(
+                  child: Column(
                     children: [
-                      Text(
+                      const Text(
                         'NEXT PRAYER',
                         style: TextStyle(
                           letterSpacing: 1.5,
@@ -163,24 +198,31 @@ class HomeScreen extends StatelessWidget {
                           color: Colors.grey,
                         ),
                       ),
-                      SizedBox(height: 12),
+
+                      const SizedBox(height: 12),
+
                       Text(
-                        'ASR',
-                        style: TextStyle(
+                        nextPrayer.type.displayName
+                            .toUpperCase(),
+                        style: const TextStyle(
                           fontSize: 34,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      SizedBox(height: 8),
+
+                      const SizedBox(height: 8),
+
                       Text(
-                        '03:48 PM',
-                        style: TextStyle(
+                        '${nextPrayer.time.hour.toString().padLeft(2, '0')}:${nextPrayer.time.minute.toString().padLeft(2, '0')}',
+                        style: const TextStyle(
                           fontSize: 18,
                         ),
                       ),
-                      SizedBox(height: 12),
-                      Text(
-                        '02:15:30 Remaining',
+
+                      const SizedBox(height: 12),
+
+                      const Text(
+                        'Dynamic countdown coming next phase',
                         style: TextStyle(
                           fontSize: 16,
                           color: Color(0xFF1E5FBF),
@@ -205,28 +247,28 @@ class HomeScreen extends StatelessWidget {
                   PrayerCard(
                     icon: Icons.wb_sunny_outlined,
                     prayerName: 'Fajr',
-                    prayerTime: '05:12 AM',
+                    prayerTime: '05:24 AM',
                   ),
                   PrayerCard(
                     icon: Icons.light_mode_outlined,
                     prayerName: 'Dhuhr',
-                    prayerTime: '12:34 PM',
+                    prayerTime: '11:44 AM',
                   ),
                   PrayerCard(
                     icon: Icons.star_outline,
                     prayerName: 'Asr',
-                    prayerTime: '03:48 PM',
+                    prayerTime: '02:14 PM',
                     highlighted: true,
                   ),
                   PrayerCard(
                     icon: Icons.wb_twilight_outlined,
                     prayerName: 'Maghrib',
-                    prayerTime: '05:42 PM',
+                    prayerTime: '04:37 PM',
                   ),
                   PrayerCard(
                     icon: Icons.nights_stay_outlined,
                     prayerName: 'Isha',
-                    prayerTime: '07:16 PM',
+                    prayerTime: '06:05 PM',
                   ),
                 ],
               ),
