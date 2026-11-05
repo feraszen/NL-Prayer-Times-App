@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../features/home/presentation/home_screen.dart';
-import '../../features/location/presentation/location_test_screen.dart';
 import '../../features/home/presentation/home_real_prayer_test_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/qibla/presentation/qibla_test_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -19,7 +19,7 @@ class _MainNavigationScreenState
 
   final List<Widget> screens = const [
     HomeScreen(),
-    LocationTestScreen(),
+    QiblaTestScreen(),
     HomeRealPrayerTestScreen(),
     SettingsScreen(),
   ];
@@ -44,7 +44,7 @@ class _MainNavigationScreenState
           NavigationDestination(
             icon: Icon(Icons.location_on_outlined),
             selectedIcon: Icon(Icons.location_on),
-            label: 'Location',
+            label: 'Qibla Test',
           ),
           NavigationDestination(
             icon: Icon(Icons.access_time_outlined),
