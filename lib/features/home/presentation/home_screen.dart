@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../location/data/providers/mock_location_provider.dart';
+import '../../location/domain/extensions/location_data_extension.dart';
+
 import '../../prayer_times/data/providers/prayer_times_mock_provider.dart';
 import '../../prayer_times/domain/extensions/prayer_time_extension.dart';
 import '../../prayer_times/domain/extensions/prayer_type_extension.dart';
 import '../../prayer_times/domain/services/prayer_service.dart';
+
 import 'widgets/live_clock.dart';
 import 'widgets/prayer_countdown.dart';
 
@@ -26,6 +30,9 @@ class HomeScreen extends StatelessWidget {
       prayerTimes,
       DateTime.now(),
     );
+
+    final location =
+        const MockLocationProvider().getLocation();
 
     return Scaffold(
       body: SafeArea(
@@ -104,16 +111,20 @@ class HomeScreen extends StatelessWidget {
                     crossAxisAlignment:
                         CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'St. John\'s, NL',
-                        style: TextStyle(
+                      Text(
+                        location.shortDisplayName,
+                        style: const TextStyle(
                           color: Colors.white70,
                           fontSize: 16,
                         ),
                       ),
+
                       const SizedBox(height: 12),
+
                       const LiveClock(),
+
                       const SizedBox(height: 12),
+
                       const Text(
                         'Thursday, November 5, 2026',
                         style: TextStyle(
@@ -121,7 +132,9 @@ class HomeScreen extends StatelessWidget {
                           fontSize: 15,
                         ),
                       ),
+
                       const SizedBox(height: 4),
+
                       const Text(
                         '14 Jumada Al-Awwal 1448',
                         style: TextStyle(
@@ -130,7 +143,9 @@ class HomeScreen extends StatelessWidget {
                           fontWeight: FontWeight.w600,
                         ),
                       ),
+
                       const SizedBox(height: 12),
+
                       Container(
                         width: 80,
                         height: 3,
@@ -183,7 +198,9 @@ class HomeScreen extends StatelessWidget {
                           color: Colors.grey,
                         ),
                       ),
+
                       const SizedBox(height: 12),
+
                       Text(
                         nextPrayer.type.displayName
                             .toUpperCase(),
@@ -192,14 +209,18 @@ class HomeScreen extends StatelessWidget {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+
                       const SizedBox(height: 8),
+
                       Text(
                         nextPrayer.formattedTime,
                         style: const TextStyle(
                           fontSize: 18,
                         ),
                       ),
+
                       const SizedBox(height: 12),
+
                       const PrayerCountdown(),
                     ],
                   ),
@@ -219,14 +240,16 @@ class HomeScreen extends StatelessWidget {
                   PrayerCard(
                     icon: Icons.wb_sunny_outlined,
                     prayerName: prayerTimes.fajr.displayName,
-                    prayerTime: prayerTimes.fajr.formattedTime,
+                    prayerTime:
+                        prayerTimes.fajr.formattedTime,
                     highlighted:
                         currentPrayer.type ==
                         prayerTimes.fajr.type,
                   ),
                   PrayerCard(
                     icon: Icons.light_mode_outlined,
-                    prayerName: prayerTimes.dhuhr.displayName,
+                    prayerName:
+                        prayerTimes.dhuhr.displayName,
                     prayerTime:
                         prayerTimes.dhuhr.formattedTime,
                     highlighted:
@@ -236,7 +259,8 @@ class HomeScreen extends StatelessWidget {
                   PrayerCard(
                     icon: Icons.star_outline,
                     prayerName: prayerTimes.asr.displayName,
-                    prayerTime: prayerTimes.asr.formattedTime,
+                    prayerTime:
+                        prayerTimes.asr.formattedTime,
                     highlighted:
                         currentPrayer.type ==
                         prayerTimes.asr.type,
@@ -253,7 +277,8 @@ class HomeScreen extends StatelessWidget {
                   ),
                   PrayerCard(
                     icon: Icons.nights_stay_outlined,
-                    prayerName: prayerTimes.isha.displayName,
+                    prayerName:
+                        prayerTimes.isha.displayName,
                     prayerTime:
                         prayerTimes.isha.formattedTime,
                     highlighted:
@@ -284,14 +309,12 @@ class PrayerCard extends StatelessWidget {
     this.highlighted = false,
   });
 
-  final Color goldColor = const Color(0xFFD4AF37);
-
   @override
   Widget build(BuildContext context) {
     return Card(
       elevation: highlighted ? 4 : 1,
       color: highlighted
-          ? goldColor
+          ? const Color(0xFFD4AF37)
           : Colors.white,
       margin: const EdgeInsets.only(bottom: 14),
       shape: RoundedRectangleBorder(
