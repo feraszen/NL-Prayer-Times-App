@@ -2,11 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../../../prayer_times/data/providers/prayer_times_mock_provider.dart';
+import '../../../prayer_times/domain/models/prayer_times.dart';
 import '../../../prayer_times/domain/services/prayer_service.dart';
 
 class PrayerCountdown extends StatefulWidget {
-  const PrayerCountdown({super.key});
+  final PrayerTimes prayerTimes;
+
+  const PrayerCountdown({
+    super.key,
+    required this.prayerTimes,
+  });
 
   @override
   State<PrayerCountdown> createState() =>
@@ -20,9 +25,6 @@ class _PrayerCountdownState
   Duration remaining = Duration.zero;
 
   final prayerService = const PrayerService();
-
-  final prayerTimes =
-      const PrayerTimesMockProvider().getPrayerTimes();
 
   @override
   void initState() {
@@ -41,7 +43,7 @@ class _PrayerCountdownState
 
     setState(() {
       remaining = prayerService.getTimeRemaining(
-        prayerTimes,
+        widget.prayerTimes,
         DateTime.now(),
       );
     });
@@ -63,10 +65,14 @@ class _PrayerCountdownState
         twoDigits(remaining.inHours);
 
     final minutes =
-        twoDigits(remaining.inMinutes.remainder(60));
+        twoDigits(
+          remaining.inMinutes.remainder(60),
+        );
 
     final seconds =
-        twoDigits(remaining.inSeconds.remainder(60));
+        twoDigits(
+          remaining.inSeconds.remainder(60),
+        );
 
     return Text(
       '$hours:$minutes:$seconds Remaining',

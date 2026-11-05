@@ -231,7 +231,9 @@ class HomeScreen extends StatelessWidget {
 
                       const SizedBox(height: 12),
 
-                      const PrayerCountdown(),
+                      PrayerCountdown(
+                       prayerTimes: prayerTimes,
+                        ),
                     ],
                   ),
                 ),
