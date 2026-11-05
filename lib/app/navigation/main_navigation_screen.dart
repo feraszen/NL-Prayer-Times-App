@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/home/presentation/home_real_prayer_test_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
-import '../../features/qibla/presentation/qibla_test_screen.dart';
+import '../../features/qibla/presentation/qibla_real_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -19,7 +19,7 @@ class _MainNavigationScreenState
 
   final List<Widget> screens = const [
     HomeScreen(),
-    QiblaTestScreen(),
+    QiblaRealScreen(),
     HomeRealPrayerTestScreen(),
     SettingsScreen(),
   ];
