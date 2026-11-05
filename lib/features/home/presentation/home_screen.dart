@@ -11,6 +11,8 @@ import '../../prayer_times/domain/services/prayer_service.dart';
 
 import 'widgets/live_clock.dart';
 import 'widgets/prayer_countdown.dart';
+import 'widgets/current_date_widget.dart';
+
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -136,13 +138,7 @@ class HomeScreen extends StatelessWidget {
 
                       const SizedBox(height: 12),
 
-                      const Text(
-                        'Thursday, November 5, 2026',
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 15,
-                        ),
-                      ),
+                      const CurrentDateWidget(),
 
                       const SizedBox(height: 4),
 
