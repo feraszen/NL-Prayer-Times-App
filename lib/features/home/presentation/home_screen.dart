@@ -12,6 +12,7 @@ import '../../prayer_times/domain/services/prayer_service.dart';
 import 'widgets/live_clock.dart';
 import 'widgets/prayer_countdown.dart';
 import 'widgets/current_date_widget.dart';
+import 'widgets/hijri_date_widget.dart';
 
 
 class HomeScreen extends StatelessWidget {
@@ -142,14 +143,7 @@ class HomeScreen extends StatelessWidget {
 
                       const SizedBox(height: 4),
 
-                      const Text(
-                        '14 Jumada Al-Awwal 1448',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      const HijriDateWidget(),
 
                       const SizedBox(height: 12),
 

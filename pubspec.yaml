@@ -22,7 +22,10 @@ dependencies:
   adhan: ^2.0.0
 
   # Date Formatting
-  intl: ^0.20.2
+  intl: ^0.20.3
+
+  # Hijri Calendar
+  hijri: ^3.0.0
 
 dev_dependencies:
   flutter_test:
