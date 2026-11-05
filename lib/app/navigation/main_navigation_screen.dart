@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../features/home/presentation/home_screen.dart';
-import '../../features/qibla/presentation/qibla_screen.dart';
+import '../../features/location/presentation/location_test_screen.dart';
 import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 
@@ -19,7 +19,7 @@ class _MainNavigationScreenState
 
   final List<Widget> screens = const [
     HomeScreen(),
-    QiblaScreen(),
+    LocationTestScreen(),
     CalendarScreen(),
     SettingsScreen(),
   ];
@@ -42,9 +42,9 @@ class _MainNavigationScreenState
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Icon(Icons.explore_outlined),
-            selectedIcon: Icon(Icons.explore),
-            label: 'Qibla',
+            icon: Icon(Icons.location_on_outlined),
+            selectedIcon: Icon(Icons.location_on),
+            label: 'Location',
           ),
           NavigationDestination(
             icon: Icon(Icons.calendar_month_outlined),
