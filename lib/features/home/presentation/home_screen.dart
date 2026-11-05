@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import '../../prayer_times/data/providers/prayer_times_mock_provider.dart';
 import '../../prayer_times/domain/extensions/prayer_type_extension.dart';
 import '../../prayer_times/domain/services/prayer_service.dart';
+import 'widgets/live_clock.dart';
+import 'widgets/prayer_countdown.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-
     final prayerTimes =
         const PrayerTimesMockProvider().getPrayerTimes();
 
@@ -54,8 +54,9 @@ class HomeScreen extends StatelessWidget {
                     child: Icon(
                       Icons.auto_awesome,
                       size: 160,
-                      color:
-                          Colors.white.withValues(alpha: 0.05),
+                      color: Colors.white.withValues(
+                        alpha: 0.05,
+                      ),
                     ),
                   ),
 
@@ -113,15 +114,7 @@ class HomeScreen extends StatelessWidget {
 
                       const SizedBox(height: 12),
 
-                      Text(
-                        '12:45 PM',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize:
-                              screenWidth < 400 ? 38 : 50,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      const LiveClock(),
 
                       const SizedBox(height: 12),
 
@@ -179,8 +172,7 @@ class HomeScreen extends StatelessWidget {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color:
-                            Colors.black.withValues(
+                        color: Colors.black.withValues(
                           alpha: 0.08,
                         ),
                         blurRadius: 24,
@@ -221,14 +213,7 @@ class HomeScreen extends StatelessWidget {
 
                       const SizedBox(height: 12),
 
-                      const Text(
-                        'Dynamic countdown coming next phase',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF1E5FBF),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      const PrayerCountdown(),
                     ],
                   ),
                 ),
