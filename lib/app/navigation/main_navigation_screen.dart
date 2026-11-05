@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../features/home/presentation/home_screen.dart';
 import '../../features/location/presentation/location_test_screen.dart';
-import '../../features/calendar/presentation/calendar_screen.dart';
+import '../../features/prayer_times/presentation/prayer_calculator_test_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
@@ -20,7 +20,7 @@ class _MainNavigationScreenState
   final List<Widget> screens = const [
     HomeScreen(),
     LocationTestScreen(),
-    CalendarScreen(),
+    PrayerCalculatorTestScreen(),
     SettingsScreen(),
   ];
 
@@ -47,9 +47,9 @@ class _MainNavigationScreenState
             label: 'Location',
           ),
           NavigationDestination(
-            icon: Icon(Icons.calendar_month_outlined),
-            selectedIcon: Icon(Icons.calendar_month),
-            label: 'Calendar',
+            icon: Icon(Icons.access_time_outlined),
+            selectedIcon: Icon(Icons.access_time),
+            label: 'Prayer Test',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),
