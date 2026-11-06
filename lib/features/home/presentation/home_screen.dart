@@ -324,20 +324,6 @@ class HomeScreen extends StatelessWidget {
                             ],
                           ),
                           const Divider(height: 24),
-                          const Row(
-                            mainAxisAlignment:
-                                MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text('Engine'),
-                              Text(
-                                'Adhan',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const Divider(height: 24),
                           Row(
                             mainAxisAlignment:
                                 MainAxisAlignment.spaceBetween,
