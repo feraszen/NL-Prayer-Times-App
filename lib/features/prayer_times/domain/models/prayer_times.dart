@@ -2,6 +2,7 @@ import 'prayer_time.dart';
 
 class PrayerTimes {
   final PrayerTime fajr;
+  final PrayerTime sunrise;
   final PrayerTime dhuhr;
   final PrayerTime asr;
   final PrayerTime maghrib;
@@ -9,6 +10,7 @@ class PrayerTimes {
 
   const PrayerTimes({
     required this.fajr,
+    required this.sunrise,
     required this.dhuhr,
     required this.asr,
     required this.maghrib,

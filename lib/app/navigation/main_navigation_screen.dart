@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../features/home/presentation/home_screen.dart';
-import '../../features/home/presentation/home_real_prayer_test_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/qibla/presentation/qibla_real_screen.dart';
 
@@ -20,7 +19,6 @@ class _MainNavigationScreenState
   final List<Widget> screens = const [
     HomeScreen(),
     QiblaRealScreen(),
-    HomeRealPrayerTestScreen(),
     SettingsScreen(),
   ];
 
@@ -45,11 +43,6 @@ class _MainNavigationScreenState
             icon: Icon(Icons.location_on_outlined),
             selectedIcon: Icon(Icons.location_on),
             label: 'Qibla Test',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.access_time_outlined),
-            selectedIcon: Icon(Icons.access_time),
-            label: 'Real Prayers',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_outlined),

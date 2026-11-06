@@ -26,7 +26,7 @@ class ISNAPrayerTimeCalculator
 
     params.madhab = adhan.Madhab.shafi;
 
-    final prayerTimes = adhan.PrayerTimes(
+    final adhanPrayerTimes = adhan.PrayerTimes(
       coordinates,
       adhan.DateComponents(
         date.year,
@@ -39,23 +39,32 @@ class ISNAPrayerTimeCalculator
     return PrayerTimes(
       fajr: PrayerTime(
         type: PrayerType.fajr,
-        time: prayerTimes.fajr,
+        time: adhanPrayerTimes.fajr,
       ),
+
+      sunrise: PrayerTime(
+        type: PrayerType.sunrise,
+        time: adhanPrayerTimes.sunrise,
+      ),
+
       dhuhr: PrayerTime(
         type: PrayerType.dhuhr,
-        time: prayerTimes.dhuhr,
+        time: adhanPrayerTimes.dhuhr,
       ),
+
       asr: PrayerTime(
         type: PrayerType.asr,
-        time: prayerTimes.asr,
+        time: adhanPrayerTimes.asr,
       ),
+
       maghrib: PrayerTime(
         type: PrayerType.maghrib,
-        time: prayerTimes.maghrib,
+        time: adhanPrayerTimes.maghrib,
       ),
+
       isha: PrayerTime(
         type: PrayerType.isha,
-        time: prayerTimes.isha,
+        time: adhanPrayerTimes.isha,
       ),
     );
   }

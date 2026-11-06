@@ -6,6 +6,9 @@ extension PrayerTypeExtension on PrayerType {
       case PrayerType.fajr:
         return 'Fajr';
 
+      case PrayerType.sunrise:
+        return 'Sunrise';
+
       case PrayerType.dhuhr:
         return 'Dhuhr';
 
@@ -20,4 +23,3 @@ extension PrayerTypeExtension on PrayerType {
     }
   }
 }
-

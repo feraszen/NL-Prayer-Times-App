@@ -19,6 +19,18 @@ class PrayerTimesMockProvider {
           24,
         ),
       ),
+
+      sunrise: PrayerTime(
+        type: PrayerType.sunrise,
+        time: DateTime(
+          now.year,
+          now.month,
+          now.day,
+          6,
+          51,
+        ),
+      ),
+
       dhuhr: PrayerTime(
         type: PrayerType.dhuhr,
         time: DateTime(
@@ -29,6 +41,7 @@ class PrayerTimesMockProvider {
           44,
         ),
       ),
+
       asr: PrayerTime(
         type: PrayerType.asr,
         time: DateTime(
@@ -39,6 +52,7 @@ class PrayerTimesMockProvider {
           14,
         ),
       ),
+
       maghrib: PrayerTime(
         type: PrayerType.maghrib,
         time: DateTime(
@@ -49,6 +63,7 @@ class PrayerTimesMockProvider {
           37,
         ),
       ),
+
       isha: PrayerTime(
         type: PrayerType.isha,
         time: DateTime(

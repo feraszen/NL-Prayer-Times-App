@@ -249,6 +249,13 @@ class HomeScreen extends StatelessWidget {
                         prayerTimes.fajr.type,
                   ),
                   PrayerCard(
+                    icon: Icons.wb_twilight,
+                    prayerName:
+                        prayerTimes.sunrise.displayName,
+                    prayerTime:
+                        prayerTimes.sunrise.formattedTime,
+                  ),
+                  PrayerCard(
                     icon: Icons.light_mode_outlined,
                     prayerName:
                         prayerTimes.dhuhr.displayName,
@@ -286,6 +293,67 @@ class HomeScreen extends StatelessWidget {
                     highlighted:
                         currentPrayer.type ==
                         prayerTimes.isha.type,
+                  ),
+                  const SizedBox(height: 12),
+                  Card(
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(18),
+                      child: Column(
+                        children: [
+                          const Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Method',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              Text(
+                                'ISNA (North America)',
+                                style: TextStyle(
+                                  color: Color(0xFF1E5FBF),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Divider(height: 24),
+                          const Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('Engine'),
+                              Text(
+                                'Adhan',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const Divider(height: 24),
+                          Row(
+                            mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
+                            children: [
+                              const Text('Location'),
+                              Text(
+                                location.shortDisplayName,
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
