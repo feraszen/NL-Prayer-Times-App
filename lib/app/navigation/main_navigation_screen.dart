@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../features/home/presentation/home_screen.dart';
+import '../../features/home/presentation/home_screen_real.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/qibla/presentation/qibla_real_screen.dart';
 
@@ -17,7 +17,7 @@ class _MainNavigationScreenState
   int currentIndex = 0;
 
   final List<Widget> screens = const [
-    HomeScreen(),
+    HomeScreenReal(),
     QiblaRealScreen(),
     SettingsScreen(),
   ];
