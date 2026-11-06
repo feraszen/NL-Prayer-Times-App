@@ -17,6 +17,9 @@ class _QiblaRealScreenState
     extends State<QiblaRealScreen> {
   double? qiblaDirection;
 
+  double? latitude;
+  double? longitude;
+
   bool isLoading = true;
 
   String errorMessage = '';
@@ -44,6 +47,10 @@ class _QiblaRealScreenState
 
       setState(() {
         qiblaDirection = direction;
+
+        latitude = position.latitude;
+        longitude = position.longitude;
+
         isLoading = false;
       });
     } catch (e) {
@@ -69,7 +76,9 @@ class _QiblaRealScreenState
     if (errorMessage.isNotEmpty) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text('Qibla'),
+          title: const Text(
+            'Qibla',
+          ),
         ),
         body: Center(
           child: Text(errorMessage),
@@ -83,31 +92,160 @@ class _QiblaRealScreenState
           'Qibla Direction',
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center,
-          children: [
-            QiblaCompass(
-              direction: qiblaDirection!,
-            ),
-
-            const SizedBox(height: 24),
-
-            Text(
-              '${qiblaDirection!.toStringAsFixed(2)}°',
-              style: const TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(
+            vertical: 24,
+          ),
+          child: Column(
+            children: [
+              QiblaCompass(
+                direction: qiblaDirection!,
               ),
-            ),
 
-            const SizedBox(height: 12),
+              const SizedBox(height: 24),
 
-            const Text(
-              'Direction to Kaaba',
-            ),
-          ],
+              Text(
+                '${qiblaDirection!.toStringAsFixed(2)}°',
+                style: const TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+
+              const SizedBox(height: 12),
+
+              const Text(
+                'Direction to Kaaba',
+              ),
+
+              const SizedBox(height: 32),
+
+              Container(
+                margin:
+                    const EdgeInsets.symmetric(
+                  horizontal: 24,
+                ),
+                padding:
+                    const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius:
+                      BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color:
+                          Colors.black.withValues(
+                        alpha: 0.06,
+                      ),
+                      blurRadius: 12,
+                      offset:
+                          const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .spaceBetween,
+                      children: [
+                        const Text(
+                          'Qibla Direction',
+                          style: TextStyle(
+                            fontWeight:
+                                FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          '${qiblaDirection!.toStringAsFixed(2)}°',
+                          style:
+                              const TextStyle(
+                            fontWeight:
+                                FontWeight.bold,
+                            color: Color(
+                              0xFF1E5FBF,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const Divider(
+                      height: 28,
+                    ),
+
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .spaceBetween,
+                      children: [
+                        const Text(
+                          'Latitude',
+                        ),
+                        Text(
+                          latitude!
+                              .toStringAsFixed(4),
+                          style:
+                              const TextStyle(
+                            fontWeight:
+                                FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(
+                      height: 12,
+                    ),
+
+                    Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .spaceBetween,
+                      children: [
+                        const Text(
+                          'Longitude',
+                        ),
+                        Text(
+                          longitude!
+                              .toStringAsFixed(4),
+                          style:
+                              const TextStyle(
+                            fontWeight:
+                                FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    const Divider(
+                      height: 28,
+                    ),
+
+                    const Row(
+                      mainAxisAlignment:
+                          MainAxisAlignment
+                              .spaceBetween,
+                      children: [
+                        Text(
+                          'Source',
+                        ),
+                        Text(
+                          'GPS Location',
+                          style: TextStyle(
+                            fontWeight:
+                                FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
