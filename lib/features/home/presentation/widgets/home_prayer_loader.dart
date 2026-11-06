@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../location/data/providers/mock_location_provider.dart';
-import '../../../location/data/repositories/location_repository.dart';
+import '../../../location/data/providers/gps_location_provider.dart';
 
 import '../../../prayer_times/data/providers/real_prayer_times_provider.dart';
 import '../../../prayer_times/data/services/prayer_times_service.dart';
@@ -27,6 +26,8 @@ class _HomePrayerLoaderState
     extends State<HomePrayerLoader> {
   PrayerTimes? prayerTimes;
 
+  String? errorMessage;
+
   @override
   void initState() {
     super.initState();
@@ -34,31 +35,48 @@ class _HomePrayerLoaderState
   }
 
   Future<void> loadPrayerTimes() async {
-    final locationRepository = LocationRepository(
-      provider: const MockLocationProvider(),
-    );
+    try {
+      final position =
+          await const GpsLocationProvider()
+              .getCurrentPosition();
 
-    final location =
-        locationRepository.getCurrentLocation();
+      final service = PrayerTimesService(
+        provider: const RealPrayerTimesProvider(),
+      );
 
-    final service = PrayerTimesService(
-      provider: const RealPrayerTimesProvider(),
-    );
+      final result = service.getPrayerTimes(
+        latitude: position.latitude,
+        longitude: position.longitude,
+      );
 
-    final result = service.getPrayerTimes(
-      latitude: location.latitude,
-      longitude: location.longitude,
-    );
+      if (!mounted) return;
 
-    if (!mounted) return;
+      setState(() {
+        prayerTimes = result;
+      });
+    } catch (e) {
+      if (!mounted) return;
 
-    setState(() {
-      prayerTimes = result;
-    });
+      setState(() {
+        errorMessage = e.toString();
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    if (errorMessage != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            errorMessage!,
+            textAlign: TextAlign.center,
+          ),
+        ),
+      );
+    }
+
     if (prayerTimes == null) {
       return const Center(
         child: CircularProgressIndicator(),
