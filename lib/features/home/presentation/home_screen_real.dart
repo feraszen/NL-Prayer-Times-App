@@ -17,61 +17,101 @@ class HomeScreenReal extends StatelessWidget {
   Widget build(BuildContext context) {
     return HomePrayerLoader(
       builder: (prayerTimes) {
-        final prayerService =
-            const PrayerService();
+        final prayerService = const PrayerService();
 
-        final nextPrayer =
-            prayerService.getNextPrayer(
+        final nextPrayer = prayerService.getNextPrayer(
           prayerTimes,
           DateTime.now(),
         );
 
         return Scaffold(
-          appBar: AppBar(
-            title: const Text(
-              'HomeScreenReal',
-            ),
-          ),
           body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
-                children: [
-                  const LiveClock(),
-
-                  const SizedBox(height: 16),
-
-                  const CurrentDateWidget(),
-
-                  const SizedBox(height: 8),
-
-                  const HijriDateWidget(),
-
-                  const SizedBox(height: 32),
-
-                  Text(
-                    'Next Prayer: ${nextPrayer.type.displayName}',
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+            child: Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(
+                    20,
+                    20,
+                    20,
+                    24,
+                  ),
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Color(0xFF0A3D91),
+                        Color(0xFF1E5FBF),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.vertical(
+                      bottom: Radius.circular(36),
                     ),
                   ),
+                  child: const Column(
+                    crossAxisAlignment:
+                        CrossAxisAlignment.start,
+                    children: [
+                      LiveClock(),
 
-                  const SizedBox(height: 16),
+                      SizedBox(height: 12),
 
-                  Text(
-                    'Time: ${nextPrayer.formattedTime}',
+                      CurrentDateWidget(),
+
+                      SizedBox(height: 4),
+
+                      HijriDateWidget(),
+                    ],
                   ),
+                ),
 
-                  const SizedBox(height: 16),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'NEXT PRAYER',
+                          style: TextStyle(
+                            letterSpacing: 1.5,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.grey,
+                          ),
+                        ),
 
-                  PrayerCountdown(
-                    prayerTimes: prayerTimes,
+                        const SizedBox(height: 12),
+
+                        Text(
+                          nextPrayer.type.displayName
+                              .toUpperCase(),
+                          style: const TextStyle(
+                            fontSize: 34,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+
+                        const SizedBox(height: 8),
+
+                        Text(
+                          nextPrayer.formattedTime,
+                          style: const TextStyle(
+                            fontSize: 18,
+                          ),
+                        ),
+
+                        const SizedBox(height: 12),
+
+                        PrayerCountdown(
+                          prayerTimes: prayerTimes,
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         );
