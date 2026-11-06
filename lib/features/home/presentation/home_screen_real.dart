@@ -15,11 +15,8 @@ class HomeScreenReal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final isSmallScreen = screenWidth < 400;
-    final clockFontSize = isSmallScreen ? 36.0 : 48.0;
-    final titleFontSize = isSmallScreen ? 22.0 : 30.0;
-    final prayerFontSize = isSmallScreen ? 18.0 : 24.0;
+    const clockFontSize = 28.0;
+    const titleFontSize = 16.0;
 
     return HomePrayerLoader(
       builder: (prayerTimes) {
@@ -42,10 +39,10 @@ class HomeScreenReal extends StatelessWidget {
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(
-                    20,
                     12,
-                    20,
-                    14,
+                    8,
+                    12,
+                    8,
                   ),
                   decoration: const BoxDecoration(
                     gradient: LinearGradient(
@@ -122,25 +119,51 @@ class HomeScreenReal extends StatelessWidget {
                             'St. John\'s, NL',
                             style: TextStyle(
                               color: Colors.white70,
-                              fontSize: 16,
+                              fontSize: 12,
                             ),
                           ),
 
                           SizedBox(height: 12),
 
-                          Transform.scale(
-                            scale: clockFontSize / 48.0,
-                            alignment: Alignment.centerLeft,
-                            child: const LiveClock(),
+                          SizedBox(
+                            height: clockFontSize * 1.4,
+                            child: FittedBox(
+                              alignment: Alignment.centerLeft,
+                              fit: BoxFit.contain,
+                              child: SizedBox(
+                                height: 48.0 * 1.4,
+                                child: const LiveClock(),
+                              ),
+                            ),
                           ),
 
                           SizedBox(height: 12),
 
-                          CurrentDateWidget(),
+                          SizedBox(
+                            height: 12.0 * 1.4,
+                            child: FittedBox(
+                              alignment: Alignment.centerLeft,
+                              fit: BoxFit.contain,
+                              child: SizedBox(
+                                height: 18.0 * 1.4,
+                                child: const CurrentDateWidget(),
+                              ),
+                            ),
+                          ),
 
                           SizedBox(height: 4),
 
-                          HijriDateWidget(),
+                          SizedBox(
+                            height: 12.0 * 1.4,
+                            child: FittedBox(
+                              alignment: Alignment.centerLeft,
+                              fit: BoxFit.contain,
+                              child: SizedBox(
+                                height: 18.0 * 1.4,
+                                child: const HijriDateWidget(),
+                              ),
+                            ),
+                          ),
 
                           SizedBox(height: 12),
 
@@ -173,7 +196,7 @@ class HomeScreenReal extends StatelessWidget {
                           offset: const Offset(0, -15),
                           child: Container(
                             width: double.infinity,
-                            padding: const EdgeInsets.all(20),
+                            padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(24),
@@ -195,6 +218,7 @@ class HomeScreenReal extends StatelessWidget {
                                 const Text(
                                   'NEXT PRAYER',
                                   style: TextStyle(
+                                    fontSize: 18,
                                     letterSpacing: 1.2,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.grey,
@@ -212,7 +236,7 @@ class HomeScreenReal extends StatelessWidget {
                                 Text(
                                   nextPrayer.formattedTime,
                                   style: TextStyle(
-                                    fontSize: prayerFontSize,
+                                    fontSize: 13,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -226,6 +250,19 @@ class HomeScreenReal extends StatelessWidget {
 
                         const SizedBox(height: 20),
 
+                        const Padding(
+                          padding: EdgeInsets.only(
+                            left: 4,
+                            bottom: 12,
+                          ),
+                          child: Text(
+                            'Prayer Times',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                         Container(
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -233,86 +270,83 @@ class HomeScreenReal extends StatelessWidget {
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withValues(
-                                  alpha: 0.06,
+                                  alpha: 0.05,
                                 ),
                                 blurRadius: 12,
                                 offset: const Offset(0, 4),
                               ),
                             ],
                           ),
-                          child: Column(
-                            children: [
-                              PrayerCard(
-                                fontSize: prayerFontSize,
-                                icon: Icons.wb_sunny_outlined,
-                                prayerName:
-                                    prayerTimes.fajr.displayName,
-                                prayerTime:
-                                    prayerTimes.fajr.formattedTime,
-                                highlighted:
-                                    currentPrayer.type ==
-                                    prayerTimes.fajr.type,
-                              ),
-
-                              PrayerCard(
-                                fontSize: prayerFontSize,
-                                icon: Icons.wb_twilight,
-                                prayerName:
-                                    prayerTimes.sunrise.displayName,
-                                prayerTime: prayerTimes
-                                    .sunrise.formattedTime,
-                              ),
-
-                              PrayerCard(
-                                fontSize: prayerFontSize,
-                                icon: Icons.light_mode_outlined,
-                                prayerName:
-                                    prayerTimes.dhuhr.displayName,
-                                prayerTime:
-                                    prayerTimes.dhuhr.formattedTime,
-                                highlighted:
-                                    currentPrayer.type ==
-                                    prayerTimes.dhuhr.type,
-                              ),
-
-                              PrayerCard(
-                                fontSize: prayerFontSize,
-                                icon: Icons.star_outline,
-                                prayerName:
-                                    prayerTimes.asr.displayName,
-                                prayerTime:
-                                    prayerTimes.asr.formattedTime,
-                                highlighted:
-                                    currentPrayer.type ==
-                                    prayerTimes.asr.type,
-                              ),
-
-                              PrayerCard(
-                                fontSize: prayerFontSize,
-                                icon:
-                                    Icons.wb_twilight_outlined,
-                                prayerName:
-                                    prayerTimes.maghrib.displayName,
-                                prayerTime: prayerTimes
-                                    .maghrib.formattedTime,
-                                highlighted:
-                                    currentPrayer.type ==
-                                    prayerTimes.maghrib.type,
-                              ),
-
-                              PrayerCard(
-                                fontSize: prayerFontSize,
-                                icon:
-                                    Icons.nights_stay_outlined,
-                                prayerName:
-                                    prayerTimes.isha.displayName,
-                                prayerTime:
-                                    prayerTimes.isha.formattedTime,
-                                highlighted:
-                                    currentPrayer.type ==
-                                    prayerTimes.isha.type,
-                              ),
-                            ],
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: Column(
+                              children: [
+                                PrayerTile(
+                                    icon: Icons.wb_sunny_outlined,
+                                  prayerName:
+                                      prayerTimes.fajr.displayName,
+                                  prayerTime:
+                                      prayerTimes.fajr.formattedTime,
+                                  highlighted:
+                                      currentPrayer.type ==
+                                      prayerTimes.fajr.type,
+                                ),
+                                const Divider(height: 1),
+                                PrayerTile(
+                                    icon: Icons.wb_twilight,
+                                  prayerName:
+                                      prayerTimes.sunrise.displayName,
+                                  prayerTime: prayerTimes
+                                      .sunrise.formattedTime,
+                                ),
+                                const Divider(height: 1),
+                                PrayerTile(
+                                    icon: Icons.light_mode_outlined,
+                                  prayerName:
+                                      prayerTimes.dhuhr.displayName,
+                                  prayerTime:
+                                      prayerTimes.dhuhr.formattedTime,
+                                  highlighted:
+                                      currentPrayer.type ==
+                                      prayerTimes.dhuhr.type,
+                                ),
+                                const Divider(height: 1),
+                                PrayerTile(
+                                    icon: Icons.star_outline,
+                                  prayerName:
+                                      prayerTimes.asr.displayName,
+                                  prayerTime:
+                                      prayerTimes.asr.formattedTime,
+                                  highlighted:
+                                      currentPrayer.type ==
+                                      prayerTimes.asr.type,
+                                ),
+                                const Divider(height: 1),
+                                PrayerTile(
+                                    icon:
+                                      Icons.wb_twilight_outlined,
+                                  prayerName:
+                                      prayerTimes.maghrib.displayName,
+                                  prayerTime: prayerTimes
+                                      .maghrib.formattedTime,
+                                  highlighted:
+                                      currentPrayer.type ==
+                                      prayerTimes.maghrib.type,
+                                ),
+                                const Divider(height: 1),
+                                PrayerTile(
+                                    icon:
+                                      Icons.nights_stay_outlined,
+                                  prayerName:
+                                      prayerTimes.isha.displayName,
+                                  prayerTime:
+                                      prayerTimes.isha.formattedTime,
+                                  highlighted:
+                                      currentPrayer.type ==
+                                      prayerTimes.isha.type,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
 
@@ -331,7 +365,7 @@ class HomeScreenReal extends StatelessWidget {
                                   child: Text(
                                     'Prayer Information',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 13,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -399,50 +433,55 @@ class HomeScreenReal extends StatelessWidget {
   }
 }
 
-class PrayerCard extends StatelessWidget {
+class PrayerTile extends StatelessWidget {
   final IconData icon;
   final String prayerName;
   final String prayerTime;
   final bool highlighted;
-  final double fontSize;
 
-  const PrayerCard({
+  const PrayerTile({
     super.key,
     required this.icon,
     required this.prayerName,
     required this.prayerTime,
     this.highlighted = false,
-    this.fontSize = 24.0,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      color: highlighted
-          ? const Color(0xFFD4AF37)
-          : Colors.white,
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(0),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          left: BorderSide(
+            color: highlighted
+                ? const Color(0xFFD4AF37)
+                : Colors.transparent,
+            width: 5,
+          ),
+        ),
       ),
       child: ListTile(
+        dense: true,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 4,
+          horizontal: 14,
+          vertical: 0,
         ),
-        leading: Icon(icon),
+        leading: Icon(
+          icon,
+          size: 22,
+        ),
         title: Text(
           prayerName,
-          style: TextStyle(
-            fontSize: fontSize,
+          style: const TextStyle(
+            fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
         ),
         trailing: Text(
           prayerTime,
-          style: TextStyle(
-            fontSize: fontSize,
+          style: const TextStyle(
+            fontSize: 16,
             fontWeight: FontWeight.bold,
           ),
         ),
