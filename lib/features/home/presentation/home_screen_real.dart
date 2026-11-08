@@ -36,7 +36,21 @@ class HomeScreenReal extends StatelessWidget {
         return LayoutBuilder(
           builder: (context, constraints) {
             final isCompact = constraints.maxHeight < 750;
-            final titleSize = (isCompact ? 14.0 : 18.0) * s;
+
+            final width = constraints.maxWidth;
+            final isPhone = width < 600;
+            final isTablet = width >= 600 && width < 1024;
+            final isDesktop = width >= 1024;
+
+            final contentMaxWidth = isDesktop
+                ? 900.0
+                : isTablet
+                    ? 700.0
+                    : double.infinity;
+
+
+            final titleSize =
+                (isPhone ? (isCompact ? 14.0 : 18.0) : 20.0) * s;
             final prayerTextSize = (isCompact ? 11.0 : 14.0) * s;
             final iconSize = (isCompact ? 14.0 : 18.0) * s;
             final cardPadding = (isCompact ? 8.0 : 12.0) * s;
@@ -55,7 +69,9 @@ class HomeScreenReal extends StatelessWidget {
                     return SingleChildScrollView(
                       child: Center(
                         child: ConstrainedBox(
-                          constraints: const BoxConstraints(maxWidth: 500),
+                          constraints: BoxConstraints(
+                            maxWidth: contentMaxWidth,
+                          ),
                           child: SizedBox(
                             width: constraints.maxWidth,
                           child: Column(
@@ -230,27 +246,19 @@ class HomeScreenReal extends StatelessWidget {
                                       'NEXT PRAYER',
                                       style: TextStyle(
                                         fontSize: titleSize,
-                                        letterSpacing: 1.2,
+                                        letterSpacing: 1.0,
                                         fontWeight: FontWeight.w600,
                                         color: Colors.grey,
                                       ),
                                     ),
-                                    const SizedBox(height: 4),
                                     Text(
-                                      nextPrayer.type.displayName.toUpperCase(),
+                                      '${nextPrayer.type.displayName.toUpperCase()} - '
+                                      '${nextPrayer.formattedTime}',
                                       style: TextStyle(
-                                        fontSize: prayerTextSize + 4,
+                                        fontSize: prayerTextSize + 2,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      nextPrayer.formattedTime,
-                                      style: TextStyle(
-                                        fontSize: prayerTextSize,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
                                     PrayerCountdown(
                                       prayerTimes: prayerTimes,
                                     ),
@@ -441,8 +449,8 @@ class HomeScreenReal extends StatelessWidget {
                     ),
                   ],
                 ),
+                          ),
                         ),
-                      ),
                       ),
                     );
                   },
