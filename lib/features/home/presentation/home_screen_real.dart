@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_sizes.dart';
+
 import '../../prayer_times/domain/extensions/prayer_time_extension.dart';
 import '../../prayer_times/domain/extensions/prayer_type_extension.dart';
 import '../../prayer_times/domain/services/prayer_service.dart';
@@ -15,8 +17,7 @@ class HomeScreenReal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const clockFontSize = 28.0;
-    const titleFontSize = 16.0;
+    final s = AppSizes.scale(context);
 
     return HomePrayerLoader(
       builder: (prayerTimes) {
@@ -32,401 +33,423 @@ class HomeScreenReal extends StatelessWidget {
           DateTime.now(),
         );
 
-        return Scaffold(
-          body: SafeArea(
-            child: Column(
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(
-                    12,
-                    8,
-                    12,
-                    8,
-                  ),
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Color(0xFF0A3D91),
-                        Color(0xFF1E5FBF),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.vertical(
-                      bottom: Radius.circular(36),
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      Positioned(
-                        left: -30,
-                        bottom: -40,
-                        child: Icon(
-                          Icons.auto_awesome,
-                          size: 160,
-                          color: Colors.white.withValues(
-                            alpha: 0.05,
-                          ),
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final isCompact = constraints.maxHeight < 750;
+            final titleSize = (isCompact ? 14.0 : 18.0) * s;
+            final prayerTextSize = (isCompact ? 11.0 : 14.0) * s;
+            final iconSize = (isCompact ? 14.0 : 18.0) * s;
+            final cardPadding = (isCompact ? 8.0 : 12.0) * s;
+            final headerPadding = (isCompact ? 8.0 : 16.0) * s;
+            final headerSpacing = (isCompact ? 6.0 : 12.0) * s;
+
+            return Scaffold(
+              body: SafeArea(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final isCompact = constraints.maxHeight < 750;
+                    final headerHeight = isCompact ? 180.0 : 240.0;
+                    final prayerTileHeight = isCompact ? 42.0 : 52.0;
+                    final horizontalPadding = constraints.maxWidth < 400 ? 12.0 : 24.0;
+
+                    return SingleChildScrollView(
+                      child: Center(
+                        child: ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 500),
+                          child: SizedBox(
+                            width: constraints.maxWidth,
+                          child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      constraints: BoxConstraints(minHeight: headerHeight),
+                      padding: EdgeInsets.fromLTRB(
+                        headerPadding,
+                        headerPadding,
+                        headerPadding,
+                        headerPadding,
+                      ),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            Color(0xFF0A3D91),
+                            Color(0xFF1E5FBF),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.vertical(
+                          bottom: Radius.circular(36),
                         ),
                       ),
-
-                      const Positioned(
-                        top: 0,
-                        right: 0,
-                        child: Icon(
-                          Icons.nightlight_round,
-                          color: Colors.white24,
-                          size: 90,
-                        ),
-                      ),
-
-                      const Positioned(
-                        top: 35,
-                        right: 120,
-                        child: Icon(
-                          Icons.star,
-                          size: 10,
-                          color: Colors.white24,
-                        ),
-                      ),
-
-                      const Positioned(
-                        top: 75,
-                        right: 85,
-                        child: Icon(
-                          Icons.star,
-                          size: 8,
-                          color: Colors.white24,
-                        ),
-                      ),
-
-                      const Positioned(
-                        top: 55,
-                        right: 150,
-                        child: Icon(
-                          Icons.star,
-                          size: 6,
-                          color: Colors.white24,
-                        ),
-                      ),
-
-                      Column(
-                        crossAxisAlignment:
-                            CrossAxisAlignment.start,
+                      child: Stack(
                         children: [
-                          Text(
-                            'St. John\'s, NL',
-                            style: TextStyle(
-                              color: Colors.white70,
-                              fontSize: 12,
+                          Positioned(
+                            left: -30,
+                            bottom: -40,
+                            child: Icon(
+                              Icons.auto_awesome,
+                              size: 160,
+                              color: Colors.white.withValues(
+                                alpha: 0.05,
+                              ),
                             ),
                           ),
 
-                          SizedBox(height: 12),
+                          const Positioned(
+                            top: 0,
+                            right: 0,
+                            child: Icon(
+                              Icons.nightlight_round,
+                              color: Colors.white24,
+                              size: 90,
+                            ),
+                          ),
 
-                          SizedBox(
-                            height: clockFontSize * 1.4,
-                            child: FittedBox(
-                              alignment: Alignment.centerLeft,
-                              fit: BoxFit.contain,
-                              child: SizedBox(
-                                height: 48.0 * 1.4,
+                          const Positioned(
+                            top: 35,
+                            right: 120,
+                            child: Icon(
+                              Icons.star,
+                              size: 10,
+                              color: Colors.white24,
+                            ),
+                          ),
+
+                          const Positioned(
+                            top: 75,
+                            right: 85,
+                            child: Icon(
+                              Icons.star,
+                              size: 8,
+                              color: Colors.white24,
+                            ),
+                          ),
+
+                          const Positioned(
+                            top: 55,
+                            right: 150,
+                            child: Icon(
+                              Icons.star,
+                              size: 6,
+                              color: Colors.white24,
+                            ),
+                          ),
+
+                          Column(
+                            crossAxisAlignment:
+                                CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'St. John\'s, NL',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 12,
+                                ),
+                              ),
+
+                              SizedBox(
+                                height: headerSpacing,
+                              ),
+
+                              DefaultTextStyle.merge(
+                                style: TextStyle(fontSize: isCompact ? 26.0 : 34.0),
                                 child: const LiveClock(),
                               ),
-                            ),
-                          ),
 
-                          SizedBox(height: 12),
+                              SizedBox(
+                                height: headerSpacing,
+                              ),
 
-                          SizedBox(
-                            height: 12.0 * 1.4,
-                            child: FittedBox(
-                              alignment: Alignment.centerLeft,
-                              fit: BoxFit.contain,
-                              child: SizedBox(
-                                height: 18.0 * 1.4,
+                              DefaultTextStyle.merge(
+                                style: TextStyle(fontSize: isCompact ? 10.0 : 13.0),
                                 child: const CurrentDateWidget(),
                               ),
-                            ),
-                          ),
 
-                          SizedBox(height: 4),
+                              SizedBox(height: 4),
 
-                          SizedBox(
-                            height: 12.0 * 1.4,
-                            child: FittedBox(
-                              alignment: Alignment.centerLeft,
-                              fit: BoxFit.contain,
-                              child: SizedBox(
-                                height: 18.0 * 1.4,
+                              DefaultTextStyle.merge(
+                                style: TextStyle(fontSize: isCompact ? 10.0 : 13.0),
                                 child: const HijriDateWidget(),
                               ),
-                            ),
-                          ),
 
-                          SizedBox(height: 12),
-
-                          SizedBox(
-                            width: 80,
-                            child: Divider(
-                              color: Color(0xFFD4AF37),
-                              thickness: 3,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(
-                      24,
-                      0,
-                      24,
-                      24,
-                    ),
-                    child: Column(
-                      crossAxisAlignment:
-                          CrossAxisAlignment.start,
-                      children: [
-                        Transform.translate(
-                          offset: const Offset(0, -15),
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: const Color(0xFFE8EEF7),
+                              SizedBox(
+                                height: headerSpacing,
                               ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(
-                                    alpha: 0.08,
-                                  ),
-                                  blurRadius: 24,
-                                  offset: const Offset(0, 8),
-                                ),
-                              ],
-                            ),
-                            child: Column(
-                              children: [
-                                const Text(
-                                  'NEXT PRAYER',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    letterSpacing: 1.2,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  nextPrayer.type.displayName.toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: titleFontSize,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 6),
-                                Text(
-                                  nextPrayer.formattedTime,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                PrayerCountdown(
-                                  prayerTimes: prayerTimes,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
 
-                        const SizedBox(height: 20),
-
-                        const Padding(
-                          padding: EdgeInsets.only(
-                            left: 4,
-                            bottom: 12,
-                          ),
-                          child: Text(
-                            'Prayer Times',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(24),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withValues(
-                                  alpha: 0.05,
+                              SizedBox(
+                                width: 80,
+                                child: Divider(
+                                  color: Color(0xFFD4AF37),
+                                  thickness: 3,
                                 ),
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
                               ),
                             ],
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(24),
-                            child: Column(
-                              children: [
-                                PrayerTile(
-                                    icon: Icons.wb_sunny_outlined,
-                                  prayerName:
-                                      prayerTimes.fajr.displayName,
-                                  prayerTime:
-                                      prayerTimes.fajr.formattedTime,
-                                  highlighted:
-                                      currentPrayer.type ==
-                                      prayerTimes.fajr.type,
-                                ),
-                                const Divider(height: 1),
-                                PrayerTile(
-                                    icon: Icons.wb_twilight,
-                                  prayerName:
-                                      prayerTimes.sunrise.displayName,
-                                  prayerTime: prayerTimes
-                                      .sunrise.formattedTime,
-                                ),
-                                const Divider(height: 1),
-                                PrayerTile(
-                                    icon: Icons.light_mode_outlined,
-                                  prayerName:
-                                      prayerTimes.dhuhr.displayName,
-                                  prayerTime:
-                                      prayerTimes.dhuhr.formattedTime,
-                                  highlighted:
-                                      currentPrayer.type ==
-                                      prayerTimes.dhuhr.type,
-                                ),
-                                const Divider(height: 1),
-                                PrayerTile(
-                                    icon: Icons.star_outline,
-                                  prayerName:
-                                      prayerTimes.asr.displayName,
-                                  prayerTime:
-                                      prayerTimes.asr.formattedTime,
-                                  highlighted:
-                                      currentPrayer.type ==
-                                      prayerTimes.asr.type,
-                                ),
-                                const Divider(height: 1),
-                                PrayerTile(
-                                    icon:
-                                      Icons.wb_twilight_outlined,
-                                  prayerName:
-                                      prayerTimes.maghrib.displayName,
-                                  prayerTime: prayerTimes
-                                      .maghrib.formattedTime,
-                                  highlighted:
-                                      currentPrayer.type ==
-                                      prayerTimes.maghrib.type,
-                                ),
-                                const Divider(height: 1),
-                                PrayerTile(
-                                    icon:
-                                      Icons.nights_stay_outlined,
-                                  prayerName:
-                                      prayerTimes.isha.displayName,
-                                  prayerTime:
-                                      prayerTimes.isha.formattedTime,
-                                  highlighted:
-                                      currentPrayer.type ==
-                                      prayerTimes.isha.type,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
+                        ],
+                      ),
+                    ),
 
-                        const SizedBox(height: 12),
-                        Card(
-                          elevation: 1,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(18),
-                            child: Column(
-                              children: const [
-                                Align(
-                                  alignment: Alignment.centerLeft,
-                                  child: Text(
-                                    'Prayer Information',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
+                    Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          horizontalPadding, 0, horizontalPadding, 12,
+                        ),
+                        child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment:
+                              CrossAxisAlignment.start,
+                          children: [
+                            Transform.translate(
+                              offset: const Offset(0, -15),
+                              child: Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.all(
+                                  cardPadding,
                                 ),
-                                SizedBox(height: 18),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(24),
+                                  border: Border.all(
+                                    color: const Color(0xFFE8EEF7),
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: 0.08,
+                                      ),
+                                      blurRadius: 24,
+                                      offset: const Offset(0, 8),
+                                    ),
+                                  ],
+                                ),
+                                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
-                                      'Method',
+                                      'NEXT PRAYER',
                                       style: TextStyle(
+                                        fontSize: titleSize,
+                                        letterSpacing: 1.2,
                                         fontWeight: FontWeight.w600,
+                                        color: Colors.grey,
                                       ),
                                     ),
+                                    const SizedBox(height: 4),
                                     Text(
-                                      'ISNA (North America)',
+                                      nextPrayer.type.displayName.toUpperCase(),
                                       style: TextStyle(
-                                        color: Color(0xFF1E5FBF),
+                                        fontSize: prayerTextSize + 4,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
-                                  ],
-                                ),
-                                Divider(height: 24),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Source'),
+                                    const SizedBox(height: 6),
                                     Text(
-                                      'GPS Location',
+                                      nextPrayer.formattedTime,
                                       style: TextStyle(
-                                        fontWeight: FontWeight.w600,
+                                        fontSize: prayerTextSize,
                                       ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    PrayerCountdown(
+                                      prayerTimes: prayerTimes,
                                     ),
                                   ],
                                 ),
-                                Divider(height: 24),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text('Calculation'),
-                                    Text(
-                                      'Adhan 2.0.0+1',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
+
+                            const SizedBox(height: 4),
+
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                left: 4,
+                                bottom: 6,
+                              ),
+                              child: Text(
+                                'Prayer Times',
+                                style: TextStyle(
+                                  fontSize: titleSize,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(24),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(
+                                      alpha: 0.05,
+                                    ),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(24),
+                                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    PrayerTile(
+                                      prayerTextSize: prayerTextSize,
+                                      iconSize: iconSize,
+                                      isCompact: isCompact,
+                                      minHeight: prayerTileHeight,
+                                        icon: Icons.wb_sunny_outlined,
+                                      prayerName:
+                                          prayerTimes.fajr.displayName,
+                                      prayerTime:
+                                          prayerTimes.fajr.formattedTime,
+                                      highlighted:
+                                          currentPrayer.type ==
+                                          prayerTimes.fajr.type,
+                                    ),
+                                    const Divider(height: 1),
+                                    PrayerTile(
+                                      prayerTextSize: prayerTextSize,
+                                      iconSize: iconSize,
+                                      isCompact: isCompact,
+                                      minHeight: prayerTileHeight,
+                                        icon: Icons.wb_twilight,
+                                      prayerName:
+                                          prayerTimes.sunrise.displayName,
+                                      prayerTime: prayerTimes
+                                          .sunrise.formattedTime,
+                                    ),
+                                    const Divider(height: 1),
+                                    PrayerTile(
+                                      prayerTextSize: prayerTextSize,
+                                      iconSize: iconSize,
+                                      isCompact: isCompact,
+                                      minHeight: prayerTileHeight,
+                                        icon: Icons.light_mode_outlined,
+                                      prayerName:
+                                          prayerTimes.dhuhr.displayName,
+                                      prayerTime:
+                                          prayerTimes.dhuhr.formattedTime,
+                                      highlighted:
+                                          currentPrayer.type ==
+                                          prayerTimes.dhuhr.type,
+                                    ),
+                                    const Divider(height: 1),
+                                    PrayerTile(
+                                      prayerTextSize: prayerTextSize,
+                                      iconSize: iconSize,
+                                      isCompact: isCompact,
+                                      minHeight: prayerTileHeight,
+                                        icon: Icons.star_outline,
+                                      prayerName:
+                                          prayerTimes.asr.displayName,
+                                      prayerTime:
+                                          prayerTimes.asr.formattedTime,
+                                      highlighted:
+                                          currentPrayer.type ==
+                                          prayerTimes.asr.type,
+                                    ),
+                                    const Divider(height: 1),
+                                    PrayerTile(
+                                      prayerTextSize: prayerTextSize,
+                                      iconSize: iconSize,
+                                      isCompact: isCompact,
+                                      minHeight: prayerTileHeight,
+                                        icon:
+                                          Icons.wb_twilight_outlined,
+                                      prayerName:
+                                          prayerTimes.maghrib.displayName,
+                                      prayerTime: prayerTimes
+                                          .maghrib.formattedTime,
+                                      highlighted:
+                                          currentPrayer.type ==
+                                          prayerTimes.maghrib.type,
+                                    ),
+                                    const Divider(height: 1),
+                                    PrayerTile(
+                                      prayerTextSize: prayerTextSize,
+                                      iconSize: iconSize,
+                                      isCompact: isCompact,
+                                      minHeight: prayerTileHeight,
+                                        icon:
+                                          Icons.nights_stay_outlined,
+                                      prayerName:
+                                          prayerTimes.isha.displayName,
+                                      prayerTime:
+                                          prayerTimes.isha.formattedTime,
+                                      highlighted:
+                                          currentPrayer.type ==
+                                          prayerTimes.isha.type,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 12),
+                            Card(
+                              elevation: 1,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(18),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(cardPadding),
+                                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        'Prayer Information',
+                                        style: TextStyle(
+                                          fontSize: titleSize,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Method',
+                                          style: TextStyle(
+                                            fontSize: prayerTextSize,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        SizedBox(width: 12),
+                                        Flexible(
+                                          child: Text(
+                                            'ISNA (North America)',
+                                            textAlign: TextAlign.end,
+                                            style: TextStyle(
+                                              fontSize: prayerTextSize,
+                                              color: Color(0xFF1E5FBF),
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 100),
-                      ],
                     ),
-                  ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+                        ),
+                      ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            );
+          },
         );
       },
     );
@@ -438,6 +461,10 @@ class PrayerTile extends StatelessWidget {
   final String prayerName;
   final String prayerTime;
   final bool highlighted;
+  final double prayerTextSize;
+  final double iconSize;
+  final bool isCompact;
+  final double minHeight;
 
   const PrayerTile({
     super.key,
@@ -445,43 +472,48 @@ class PrayerTile extends StatelessWidget {
     required this.prayerName,
     required this.prayerTime,
     this.highlighted = false,
+    required this.prayerTextSize,
+    required this.iconSize,
+    this.isCompact = false,
+    this.minHeight = 52,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          left: BorderSide(
-            color: highlighted
-                ? const Color(0xFFD4AF37)
-                : Colors.transparent,
-            width: 5,
-          ),
-        ),
-      ),
+      width: double.infinity,
+      constraints: BoxConstraints(minHeight: minHeight),
+      color: highlighted
+          ? const Color(0xFFD4AF37)
+          : Colors.white,
       child: ListTile(
         dense: true,
+        visualDensity: const VisualDensity(
+          vertical: -4,
+        ),
+        minVerticalPadding: 0,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
+          horizontal: 10,
           vertical: 0,
         ),
         leading: Icon(
           icon,
-          size: 22,
+          size: iconSize,
+          color: highlighted ? Colors.black : null,
         ),
         title: Text(
           prayerName,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: prayerTextSize,
+            color: highlighted ? Colors.black : null,
             fontWeight: FontWeight.w600,
           ),
         ),
         trailing: Text(
           prayerTime,
-          style: const TextStyle(
-            fontSize: 16,
+          style: TextStyle(
+            fontSize: prayerTextSize,
+            color: highlighted ? Colors.black : null,
             fontWeight: FontWeight.bold,
           ),
         ),
