@@ -63,7 +63,7 @@ class HomeScreenReal extends StatelessWidget {
                   builder: (context, constraints) {
                     final isCompact = constraints.maxHeight < 750;
                     final headerHeight = isCompact ? 180.0 : 240.0;
-                    final prayerTileHeight = isCompact ? 42.0 : 52.0;
+                    final prayerTileHeight = isCompact ? 36.0 : 42.0;
                     final horizontalPadding = constraints.maxWidth < 400 ? 12.0 : 24.0;
 
                     return SingleChildScrollView(
@@ -502,7 +502,6 @@ class PrayerTile extends StatelessWidget {
         minVerticalPadding: 0,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 10,
-          vertical: 0,
         ),
         leading: Icon(
           icon,
