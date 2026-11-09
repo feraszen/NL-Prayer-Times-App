@@ -36,6 +36,10 @@ class SettingsService {
   static const String _ishaKey =
       'isha_notification';
 
+  static const String
+      _notificationSoundPathKey =
+      'notification_sound_path';
+
   Future<void> saveThemeMode(
     AppThemeMode mode,
   ) async {
@@ -188,7 +192,8 @@ class SettingsService {
     );
   }
 
-  Future<bool> getMaghribNotification() async {
+  Future<bool> getMaghribNotification()
+      async {
     final prefs =
         await SharedPreferences.getInstance();
 
@@ -218,5 +223,27 @@ class SettingsService {
           _ishaKey,
         ) ??
         true;
+  }
+
+  Future<void> saveNotificationSoundPath(
+    String path,
+  ) async {
+    final prefs =
+        await SharedPreferences.getInstance();
+
+    await prefs.setString(
+      _notificationSoundPathKey,
+      path,
+    );
+  }
+
+  Future<String?> getNotificationSoundPath()
+      async {
+    final prefs =
+        await SharedPreferences.getInstance();
+
+    return prefs.getString(
+      _notificationSoundPathKey,
+    );
   }
 }

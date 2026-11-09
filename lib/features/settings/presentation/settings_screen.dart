@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:file_picker/file_picker.dart';
+import 'package:path/path.dart' as path;
 
 import '../../../core/services/settings_service.dart';
 import '../../../core/services/notification_service.dart';
@@ -25,6 +28,8 @@ class _SettingsScreenState
   bool isLoadingLocation = true;
 
   bool notificationsEnabled = false;
+
+  String? notificationSoundPath;
 
   bool fajrNotification = true;
 
@@ -112,6 +117,9 @@ class _SettingsScreenState
     final isha =
         await settingsService.getIshaNotification();
 
+    final soundPath =
+        await settingsService.getNotificationSoundPath();
+
     if (!mounted) return;
 
     setState(() {
@@ -124,6 +132,8 @@ class _SettingsScreenState
       asrNotification = asr;
       maghribNotification = maghrib;
       ishaNotification = isha;
+
+      notificationSoundPath = soundPath;
     });
   }
 
@@ -233,6 +243,47 @@ class _SettingsScreenState
 
     setState(() {
       currentTimeFormat = selected;
+    });
+  }
+
+  Future<void> pickNotificationSound() async {
+    final files = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: [
+        'mp3',
+        'wav',
+        'm4a',
+        'ogg',
+      ],
+    );
+
+    if (files.isEmpty) return;
+
+    if (kIsWeb) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Selecting a local notification sound is not supported on web.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    final selectedPath = files.first.path;
+
+    if (selectedPath == null) return;
+
+    await settingsService.saveNotificationSoundPath(
+      selectedPath,
+    );
+
+    if (!mounted) return;
+
+    setState(() {
+      notificationSoundPath = selectedPath;
     });
   }
 
@@ -394,6 +445,24 @@ class _SettingsScreenState
                               .showTestNotification();
                         }
                       : null,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(
+                    Icons.audio_file_outlined,
+                  ),
+                  title: const Text(
+                    'Notification Sound',
+                  ),
+                  subtitle: Text(
+                    notificationSoundPath == null
+                        ? 'No sound selected'
+                        : path.basename(notificationSoundPath!),
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                  ),
+                  onTap: pickNotificationSound,
                 ),
                 const Divider(height: 1),
 

@@ -29,7 +29,9 @@ dependencies:
 
   # Local Settings Storage
   shared_preferences: ^2.5.3
-
+  file_picker: ^13.3.2
+  path: ^1.9.0
+  
   # Notifications
   flutter_local_notifications: ^19.4.2
   timezone: ^0.10.1
