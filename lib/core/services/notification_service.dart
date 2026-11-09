@@ -54,4 +54,42 @@ class NotificationService {
       details,
     );
   }
+
+  Future<void> schedulePrayerNotification({
+    required int id,
+    required String title,
+    required String body,
+  }) async {
+    const androidDetails =
+        AndroidNotificationDetails(
+      'prayer_channel',
+      'Prayer Notifications',
+      channelDescription:
+          'Prayer time notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await notifications.show(
+      id,
+      title,
+      body,
+      details,
+    );
+  }
+
+  Future<void> cancelNotification(
+    int id,
+  ) async {
+    await notifications.cancel(id);
+  }
+
+  Future<void> cancelAllNotifications()
+      async {
+    await notifications.cancelAll();
+  }
 }
