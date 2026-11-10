@@ -104,46 +104,53 @@ class NotificationService {
     required String prayerName,
     required DateTime prayerTime,
   }) async {
-    if (prayerTime.isBefore(
-      DateTime.now(),
-    )) {
+    try {
+      if (prayerTime.isBefore(
+        DateTime.now(),
+      )) {
+        debugPrint(
+          '$prayerName notification skipped (time already passed)',
+        );
+
+        return;
+      }
+
       debugPrint(
-        '$prayerName notification skipped (time already passed)',
+        '$prayerName notification scheduled for $prayerTime',
       );
 
-      return;
+      const androidDetails =
+          AndroidNotificationDetails(
+        'prayer_channel',
+        'Prayer Notifications',
+        channelDescription:
+            'Prayer time notifications',
+        importance: Importance.max,
+        priority: Priority.high,
+      );
+
+      const details = NotificationDetails(
+        android: androidDetails,
+      );
+
+      await notifications.zonedSchedule(
+        id,
+        '$prayerName Prayer',
+        'It\'s time for $prayerName prayer.',
+        tz.TZDateTime.from(
+          prayerTime,
+          tz.local,
+        ),
+        details,
+        androidScheduleMode:
+            AndroidScheduleMode
+                .inexactAllowWhileIdle,
+      );
+    } catch (e) {
+      debugPrint(
+        'Failed to schedule $prayerName notification: $e',
+      );
     }
-
-    debugPrint(
-      '$prayerName notification scheduled for $prayerTime',
-    );
-
-    const androidDetails =
-        AndroidNotificationDetails(
-      'prayer_channel',
-      'Prayer Notifications',
-      channelDescription:
-          'Prayer time notifications',
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-
-    const details = NotificationDetails(
-      android: androidDetails,
-    );
-
-    await notifications.zonedSchedule(
-      id,
-      '$prayerName Prayer',
-      'It\'s time for $prayerName prayer.',
-      tz.TZDateTime.from(
-        prayerTime,
-        tz.local,
-      ),
-      details,
-      androidScheduleMode:
-          AndroidScheduleMode.exactAllowWhileIdle,
-    );
   }
 
   Future<void> scheduleDailyPrayerNotifications({

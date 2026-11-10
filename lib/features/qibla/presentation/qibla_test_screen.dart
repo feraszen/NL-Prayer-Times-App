@@ -27,7 +27,8 @@ class QiblaTestScreen extends StatelessWidget {
               MainAxisAlignment.center,
           children: [
             QiblaCompass(
-              direction: qiblaDirection,
+              qiblaDirection: qiblaDirection,
+              heading: 0,
             ),
 
             const SizedBox(height: 32),
@@ -39,6 +40,12 @@ class QiblaTestScreen extends StatelessWidget {
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
+            ),
+
+            const SizedBox(height: 12),
+
+            const Text(
+              'Test Mode (Heading = 0°)',
             ),
           ],
         ),

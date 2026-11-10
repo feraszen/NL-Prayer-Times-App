@@ -1,5 +1,5 @@
-name: my_ios_app
-description: "A new Flutter project."
+name: nl_prayer_times_app
+description: "NL Prayer Times App"
 
 publish_to: 'none'
 
@@ -18,16 +18,16 @@ dependencies:
   geolocator: ^14.1.2
   geocoding: ^4.0.0
 
-  # Prayer Times Calculation
+  # Prayer Times
   adhan: ^2.0.0
 
-  # Date Formatting
+  # Date & Time
   intl: ^0.20.3
 
   # Hijri Calendar
   hijri: ^3.0.0
 
-  # Local Settings Storage
+  # Settings Storage
   shared_preferences: ^2.5.3
 
   # File Picker
@@ -42,12 +42,23 @@ dependencies:
   timezone: ^0.10.1
   flutter_timezone: ^4.1.1
 
+  # Qibla Live Compass
+  flutter_compass: ^0.8.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
   flutter_lints: ^6.0.0
 
+  flutter_launcher_icons: ^0.14.4
+
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/mosque_app_icon_1024.png"
+  min_sdk_android: 21
   

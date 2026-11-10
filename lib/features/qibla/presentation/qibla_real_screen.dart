@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_compass/flutter_compass.dart';
 
 import '../../location/data/providers/gps_location_provider.dart';
 
@@ -20,6 +21,8 @@ class _QiblaRealScreenState
   double? latitude;
   double? longitude;
 
+  double heading = 0;
+
   bool isLoading = true;
 
   String errorMessage = '';
@@ -27,7 +30,18 @@ class _QiblaRealScreenState
   @override
   void initState() {
     super.initState();
+
     loadQibla();
+
+    FlutterCompass.events?.listen(
+      (CompassEvent event) {
+        if (!mounted) return;
+
+        setState(() {
+          heading = event.heading ?? 0;
+        });
+      },
+    );
   }
 
   Future<void> loadQibla() async {
@@ -100,7 +114,8 @@ class _QiblaRealScreenState
           child: Column(
             children: [
               QiblaCompass(
-                direction: qiblaDirection!,
+                qiblaDirection: qiblaDirection!,
+                heading: heading,
               ),
 
               const SizedBox(height: 24),
@@ -117,6 +132,12 @@ class _QiblaRealScreenState
 
               const Text(
                 'Direction to Kaaba',
+              ),
+
+              const SizedBox(height: 8),
+
+              Text(
+                'Phone Heading: ${heading.toStringAsFixed(1)}°',
               ),
 
               const SizedBox(height: 32),

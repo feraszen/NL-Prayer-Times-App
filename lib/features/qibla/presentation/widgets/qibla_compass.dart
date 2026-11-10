@@ -3,15 +3,23 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class QiblaCompass extends StatelessWidget {
-  final double direction;
+  final double qiblaDirection;
+
+  final double heading;
 
   const QiblaCompass({
     super.key,
-    required this.direction,
+    required this.qiblaDirection,
+    required this.heading,
   });
 
   @override
   Widget build(BuildContext context) {
+    final rotation =
+        (qiblaDirection - heading) *
+            pi /
+            180;
+
     return SizedBox(
       width: 320,
       height: 320,
@@ -25,7 +33,9 @@ class QiblaCompass extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(
                 width: 3,
-                color: const Color(0xFF1E5FBF),
+                color: const Color(
+                  0xFF1E5FBF,
+                ),
               ),
             ),
           ),
@@ -36,7 +46,8 @@ class QiblaCompass extends StatelessWidget {
               'N',
               style: TextStyle(
                 fontSize: 22,
-                fontWeight: FontWeight.bold,
+                fontWeight:
+                    FontWeight.bold,
               ),
             ),
           ),
@@ -47,7 +58,8 @@ class QiblaCompass extends StatelessWidget {
               'S',
               style: TextStyle(
                 fontSize: 22,
-                fontWeight: FontWeight.bold,
+                fontWeight:
+                    FontWeight.bold,
               ),
             ),
           ),
@@ -58,7 +70,8 @@ class QiblaCompass extends StatelessWidget {
               'W',
               style: TextStyle(
                 fontSize: 22,
-                fontWeight: FontWeight.bold,
+                fontWeight:
+                    FontWeight.bold,
               ),
             ),
           ),
@@ -69,7 +82,8 @@ class QiblaCompass extends StatelessWidget {
               'E',
               style: TextStyle(
                 fontSize: 22,
-                fontWeight: FontWeight.bold,
+                fontWeight:
+                    FontWeight.bold,
               ),
             ),
           ),
@@ -77,11 +91,13 @@ class QiblaCompass extends StatelessWidget {
           const Icon(
             Icons.mosque,
             size: 120,
-            color: Color(0xFFD4AF37),
+            color: Color(
+              0xFFD4AF37,
+            ),
           ),
 
           Transform.rotate(
-            angle: direction * pi / 180,
+            angle: rotation,
             child: const Icon(
               Icons.navigation,
               size: 60,

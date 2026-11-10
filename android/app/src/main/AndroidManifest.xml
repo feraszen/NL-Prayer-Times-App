@@ -7,7 +7,7 @@
         android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
-        android:label="my_ios_app"
+        android:label="NLPrayer Times"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
