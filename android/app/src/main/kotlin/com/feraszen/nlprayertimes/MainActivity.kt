@@ -1,4 +1,4 @@
-package com.example.my_ios_app
+package com.feraszen.nlprayertimes
 
 import io.flutter.embedding.android.FlutterActivity
 

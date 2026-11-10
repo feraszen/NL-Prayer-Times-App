@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.my_ios_app"
+    namespace = "com.feraszen.nlprayertimes"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -16,7 +16,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.my_ios_app"
+        applicationId = "com.feraszen.nlprayertimes"
 
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
