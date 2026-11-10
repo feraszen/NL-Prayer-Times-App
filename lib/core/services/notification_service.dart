@@ -1,4 +1,6 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 class NotificationService {
   NotificationService._();
@@ -11,6 +13,8 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
+    tz.initializeTimeZones();
+
     const androidSettings =
         AndroidInitializationSettings(
       '@mipmap/ic_launcher',
@@ -80,6 +84,38 @@ class NotificationService {
       body,
       details,
     );
+  }
+
+  Future<void> schedulePrayerNotificationAtTime({
+    required int id,
+    required String prayerName,
+    required DateTime prayerTime,
+  }) async {
+    const androidDetails =
+        AndroidNotificationDetails(
+      'prayer_channel',
+      'Prayer Notifications',
+      channelDescription:
+          'Prayer time notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    const details = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await notifications.zonedSchedule(
+      id,
+      '$prayerName Prayer',
+      'It\'s time for $prayerName prayer.',
+      tz.TZDateTime.from(
+        prayerTime,
+        tz.local,
+      ),
+      details,
+      androidScheduleMode:
+          AndroidScheduleMode.exactAllowWhileIdle,    );
   }
 
   Future<void> cancelNotification(

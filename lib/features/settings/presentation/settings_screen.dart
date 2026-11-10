@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:file_picker/file_picker.dart';
 import 'package:path/path.dart' as path;
@@ -43,6 +44,8 @@ class _SettingsScreenState
 
   final SettingsService settingsService =
       SettingsService();
+
+  final AudioPlayer audioPlayer = AudioPlayer();
 
   AppThemeMode currentTheme =
       AppThemeMode.system;
@@ -287,6 +290,39 @@ class _SettingsScreenState
     });
   }
 
+  Future<void> playSelectedSound() async {
+    final selectedPath = notificationSoundPath;
+    if (selectedPath == null) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No sound selected.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    await audioPlayer.stop();
+    if (!mounted) return;
+
+    await audioPlayer.play(
+      DeviceFileSource(selectedPath),
+    );
+  }
+
+  Future<void> stopSelectedSound() async {
+    await audioPlayer.stop();
+  }
+
+  @override
+  void dispose() {
+    audioPlayer.dispose();
+    super.dispose();
+  }
+
   String get themeText {
     switch (currentTheme) {
       case AppThemeMode.system:
@@ -463,6 +499,35 @@ class _SettingsScreenState
                     Icons.chevron_right,
                   ),
                   onTap: pickNotificationSound,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(
+                    Icons.play_arrow_outlined,
+                  ),
+                  title: const Text(
+                    'Play Selected Sound',
+                  ),
+                  subtitle: const Text(
+                    'Preview the selected audio file',
+                  ),
+                  enabled: notificationSoundPath != null,
+                  onTap: notificationSoundPath == null
+                      ? null
+                      : playSelectedSound,
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(
+                    Icons.stop_outlined,
+                  ),
+                  title: const Text(
+                    'Stop Sound',
+                  ),
+                  subtitle: const Text(
+                    'Stop the current audio playback',
+                  ),
+                  onTap: stopSelectedSound,
                 ),
                 const Divider(height: 1),
 
