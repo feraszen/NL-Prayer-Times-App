@@ -1,12 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+
+import '../../features/prayer_times/domain/models/prayer_times.dart';
 
 class NotificationService {
   NotificationService._();
 
   static final NotificationService instance =
       NotificationService._();
+
+  static const int fajrId = 1;
+
+  static const int dhuhrId = 2;
+
+  static const int asrId = 3;
+
+  static const int maghribId = 4;
+
+  static const int ishaId = 5;
 
   final FlutterLocalNotificationsPlugin
       notifications =
@@ -91,6 +104,20 @@ class NotificationService {
     required String prayerName,
     required DateTime prayerTime,
   }) async {
+    if (prayerTime.isBefore(
+      DateTime.now(),
+    )) {
+      debugPrint(
+        '$prayerName notification skipped (time already passed)',
+      );
+
+      return;
+    }
+
+    debugPrint(
+      '$prayerName notification scheduled for $prayerTime',
+    );
+
     const androidDetails =
         AndroidNotificationDetails(
       'prayer_channel',
@@ -115,7 +142,73 @@ class NotificationService {
       ),
       details,
       androidScheduleMode:
-          AndroidScheduleMode.exactAllowWhileIdle,    );
+          AndroidScheduleMode.exactAllowWhileIdle,
+    );
+  }
+
+  Future<void> scheduleDailyPrayerNotifications({
+    required PrayerTimes prayerTimes,
+    required bool fajrEnabled,
+    required bool dhuhrEnabled,
+    required bool asrEnabled,
+    required bool maghribEnabled,
+    required bool ishaEnabled,
+  }) async {
+    await cancelAllNotifications();
+
+    debugPrint(
+      'Scheduling daily prayer notifications...',
+    );
+
+    if (fajrEnabled) {
+      debugPrint('Scheduling Fajr');
+
+      await schedulePrayerNotificationAtTime(
+        id: fajrId,
+        prayerName: 'Fajr',
+        prayerTime: prayerTimes.fajr.time,
+      );
+    }
+
+    if (dhuhrEnabled) {
+      debugPrint('Scheduling Dhuhr');
+
+      await schedulePrayerNotificationAtTime(
+        id: dhuhrId,
+        prayerName: 'Dhuhr',
+        prayerTime: prayerTimes.dhuhr.time,
+      );
+    }
+
+    if (asrEnabled) {
+      debugPrint('Scheduling Asr');
+
+      await schedulePrayerNotificationAtTime(
+        id: asrId,
+        prayerName: 'Asr',
+        prayerTime: prayerTimes.asr.time,
+      );
+    }
+
+    if (maghribEnabled) {
+      debugPrint('Scheduling Maghrib');
+
+      await schedulePrayerNotificationAtTime(
+        id: maghribId,
+        prayerName: 'Maghrib',
+        prayerTime: prayerTimes.maghrib.time,
+      );
+    }
+
+    if (ishaEnabled) {
+      debugPrint('Scheduling Isha');
+
+      await schedulePrayerNotificationAtTime(
+        id: ishaId,
+        prayerName: 'Isha',
+        prayerTime: prayerTimes.isha.time,
+      );
+    }
   }
 
   Future<void> cancelNotification(

@@ -36,8 +36,7 @@ class SettingsService {
   static const String _ishaKey =
       'isha_notification';
 
-  static const String
-      _notificationSoundPathKey =
+  static const String _notificationSoundPathKey =
       'notification_sound_path';
 
   Future<void> saveThemeMode(
@@ -61,8 +60,7 @@ class SettingsService {
 
     return AppThemeMode.values.firstWhere(
       (e) => e.name == value,
-      orElse: () =>
-          AppThemeMode.system,
+      orElse: () => AppThemeMode.system,
     );
   }
 
@@ -87,8 +85,7 @@ class SettingsService {
 
     return TimeFormat.values.firstWhere(
       (e) => e.name == value,
-      orElse: () =>
-          TimeFormat.hour12,
+      orElse: () => TimeFormat.hour12,
     );
   }
 
@@ -192,8 +189,7 @@ class SettingsService {
     );
   }
 
-  Future<bool> getMaghribNotification()
-      async {
+  Future<bool> getMaghribNotification() async {
     final prefs =
         await SharedPreferences.getInstance();
 
@@ -243,6 +239,16 @@ class SettingsService {
         await SharedPreferences.getInstance();
 
     return prefs.getString(
+      _notificationSoundPathKey,
+    );
+  }
+
+  Future<void> clearNotificationSoundPath()
+      async {
+    final prefs =
+        await SharedPreferences.getInstance();
+
+    await prefs.remove(
       _notificationSoundPathKey,
     );
   }
