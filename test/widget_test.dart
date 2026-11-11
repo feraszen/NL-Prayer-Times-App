@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:my_ios_app/app/app.dart';
+import 'package:nl_prayer_times_app/app/app.dart';
 
 void main() {
   testWidgets(
@@ -9,7 +9,10 @@ void main() {
         const NLPrayerTimesApp(),
       );
 
-      expect(find.text('Home'), findsOneWidget);
+      expect(
+        find.byType(NLPrayerTimesApp),
+        findsOneWidget,
+      );
     },
   );
 }

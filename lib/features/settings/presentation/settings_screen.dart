@@ -317,6 +317,29 @@ class _SettingsScreenState
     await audioPlayer.stop();
   }
 
+  String get selectedSoundType {
+    if (notificationSoundPath == null) {
+      return 'No sound selected';
+    }
+
+    final extension = path.extension(
+      notificationSoundPath!,
+    ).toLowerCase();
+
+    switch (extension) {
+      case '.mp3':
+        return 'MP3 Audio File';
+      case '.wav':
+        return 'WAV Audio File';
+      case '.m4a':
+        return 'M4A Audio File';
+      case '.ogg':
+        return 'OGG Audio File';
+      default:
+        return 'Audio File';
+    }
+  }
+
   @override
   void dispose() {
     audioPlayer.dispose();
@@ -354,6 +377,57 @@ class _SettingsScreenState
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () async {
+              await NotificationService.instance
+                  .showTestNotification();
+            },
+            child: const Text(
+              'Test Notification',
+            ),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: () async {
+              await NotificationService.instance
+                  .scheduleNotificationIn30Seconds();
+            },
+            child: const Text(
+              'Test Notification After 30 Seconds',
+            ),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: () async {
+              await NotificationService.instance
+                  .printPendingNotifications();
+            },
+            child: const Text(
+              'Check Pending Notifications',
+            ),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: () async {
+              await NotificationService.instance
+                  .printActiveNotifications();
+            },
+            child: const Text(
+              'Check Active Notifications',
+            ),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            onPressed: () async {
+              await NotificationService.instance
+                  .checkExactAlarmPermission();
+            },
+            child: const Text(
+              'Check Exact Alarm Permission',
+            ),
+          ),
+
           Card(
             child: Column(
               children: [
@@ -487,13 +561,15 @@ class _SettingsScreenState
                   leading: const Icon(
                     Icons.audio_file_outlined,
                   ),
-                  title: const Text(
-                    'Notification Sound',
+                  title: Text(
+                    notificationSoundPath == null
+                        ? 'Notification Sound'
+                        : path.basename(notificationSoundPath!),
                   ),
                   subtitle: Text(
                     notificationSoundPath == null
                         ? 'No sound selected'
-                        : path.basename(notificationSoundPath!),
+                        : selectedSoundType,
                   ),
                   trailing: const Icon(
                     Icons.chevron_right,
@@ -728,3 +804,4 @@ class _SettingsScreenState
     );
   }
 }
+

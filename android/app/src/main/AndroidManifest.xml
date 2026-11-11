@@ -1,14 +1,27 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Location -->
     <uses-permission
         android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <uses-permission
         android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
+    <!-- Notifications -->
+    <uses-permission
+        android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- Prayer notifications scheduling -->
+    <uses-permission
+        android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+
+    <!-- Android 14+ -->
+    <uses-permission
+        android:name="android.permission.USE_EXACT_ALARM" />
+
     <application
-        android:label="NLPrayer Times"
         android:name="${applicationName}"
+        android:label="NL Prayer Times"
         android:icon="@mipmap/ic_launcher">
 
         <activity
