@@ -14,43 +14,46 @@ class PrayerNotificationScheduler {
     required this.settingsService,
   });
 
-  Future<void> scheduleNotifications({
-    required LocationData location,
-  }) async {
-    final prayerTimes =
-        prayerTimesService.getPrayerTimes(
-      latitude: location.latitude,
-      longitude: location.longitude,
-    );
+  static Future<void> _pendingUpdate = Future.value();
 
-    final fajrEnabled =
-        await settingsService
-            .getFajrNotification();
+  Future<void> scheduleNotifications({required LocationData location}) {
+    final update = _pendingUpdate.then((_) => _schedule(location));
+    // Serialize Home/resume and Settings updates while allowing retries on errors.
+    _pendingUpdate = update.catchError((Object error) {});
+    return update;
+  }
 
-    final dhuhrEnabled =
-        await settingsService
-            .getDhuhrNotification();
+  Future<void> _schedule(LocationData location) async {
+    if (!NotificationService.isSupported) return;
+    await NotificationService.instance.cancelPrayerNotifications();
+    if (!await settingsService.getNotificationsEnabled()) return;
 
-    final asrEnabled =
-        await settingsService
-            .getAsrNotification();
+    final fajrEnabled = await settingsService.getFajrNotification();
 
-    final maghribEnabled =
-        await settingsService
-            .getMaghribNotification();
+    final dhuhrEnabled = await settingsService.getDhuhrNotification();
 
-    final ishaEnabled =
-        await settingsService
-            .getIshaNotification();
+    final asrEnabled = await settingsService.getAsrNotification();
 
-    await NotificationService.instance
-        .scheduleDailyPrayerNotifications(
-      prayerTimes: prayerTimes,
-      fajrEnabled: fajrEnabled,
-      dhuhrEnabled: dhuhrEnabled,
-      asrEnabled: asrEnabled,
-      maghribEnabled: maghribEnabled,
-      ishaEnabled: ishaEnabled,
-    );
+    final maghribEnabled = await settingsService.getMaghribNotification();
+
+    final ishaEnabled = await settingsService.getIshaNotification();
+
+    final now = DateTime.now();
+    for (var day = 0; day < 7; day++) {
+      final prayerTimes = prayerTimesService.getPrayerTimes(
+        latitude: location.latitude,
+        longitude: location.longitude,
+        date: DateTime(now.year, now.month, now.day + day),
+      );
+      await NotificationService.instance.scheduleDailyPrayerNotifications(
+        prayerTimes: prayerTimes,
+        dayOffset: day,
+        fajrEnabled: fajrEnabled,
+        dhuhrEnabled: dhuhrEnabled,
+        asrEnabled: asrEnabled,
+        maghribEnabled: maghribEnabled,
+        ishaEnabled: ishaEnabled,
+      );
+    }
   }
 }

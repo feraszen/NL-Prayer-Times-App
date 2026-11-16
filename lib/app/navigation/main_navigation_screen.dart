@@ -1,55 +1,105 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import '../app_preferences.dart';
+import '../theme/app_colors.dart';
 import '../../features/home/presentation/home_screen_real.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/qibla/presentation/qibla_real_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
-
   @override
-  State<MainNavigationScreen> createState() =>
-      _MainNavigationScreenState();
+  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
 }
 
-class _MainNavigationScreenState
-    extends State<MainNavigationScreen> {
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
   int currentIndex = 0;
-
-  final List<Widget> screens = const [
-    HomeScreenReal(),
-    QiblaRealScreen(),
-    SettingsScreen(),
-  ];
-
+  void select(int index) => setState(() => currentIndex = index);
   @override
   Widget build(BuildContext context) {
+    final p = AppScope.of(context);
+    final labels = [
+      p.text('الرئيسية', 'Home'),
+      p.text('القبلة', 'Qibla'),
+      p.text('الإعدادات', 'Settings'),
+    ];
+    const icons = [
+      CupertinoIcons.house,
+      CupertinoIcons.compass,
+      CupertinoIcons.gear_alt,
+    ];
     return Scaffold(
-      body: screens[currentIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            currentIndex = index;
-          });
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home),
-            label: 'Home',
+      body: switch (currentIndex) {
+        0 => HomeScreenReal(onSettings: () => select(2)),
+        1 => const QiblaRealScreen(),
+        _ => const SettingsScreen(),
+      },
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Container(
+          margin: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+          padding: const EdgeInsets.all(7),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(26),
+            border: Border.all(color: Theme.of(context).dividerColor),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.location_on_outlined),
-            selectedIcon: Icon(Icons.location_on),
-            label: 'Qibla Test',
+          child: Row(
+            children: List.generate(
+              3,
+              (i) => Expanded(
+                child: Semantics(
+                  selected: currentIndex == i,
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(20),
+                    onTap: () => select(i),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 220),
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        gradient: currentIndex == i
+                            ? const LinearGradient(
+                                colors: [
+                                  AppColors.royalBlue,
+                                  AppColors.deepSkyBlue,
+                                ],
+                              )
+                            : null,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            icons[i],
+                            color: currentIndex == i
+                                ? Colors.white
+                                : Theme.of(context).colorScheme.primary,
+                            size: 25,
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            labels[i],
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: currentIndex == i
+                                  ? Colors.white
+                                  : Theme.of(context).colorScheme.primary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
-          NavigationDestination(
-            icon: Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
+        ),
       ),
     );
   }

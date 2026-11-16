@@ -1,17 +1,82 @@
-# my_ios_app
+# NL Prayer Times
 
-A new Flutter project.
+Flutter prayer times and Qibla app using GPS, ISNA (15° Fajr/Isha), and Shafi Asr.
+The active home screen includes the blue header, sunrise, prayer cards, current
+prayer highlight, countdown, and calculation information.
 
-## Getting Started
+## Run and verify
 
-This project is a starting point for a Flutter application.
+Use Flutter with Dart 3.12.2 or later:
 
-A few resources to get you started if this is your first Flutter project:
+```sh
+flutter pub get
+flutter analyze
+flutter test
+flutter run
+```
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Android prayer notifications
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Scheduled and immediate prayer tests use `prayer_channel_v2` and the bundled
+  `android/app/src/main/res/raw/adhan.mp3` (copied from `adhan_makkah.mp3`).
+- The manifest declares the scheduled notification receiver and boot receiver.
+  Pending alarms can be restored after reboot or an app update.
+- Exact scheduling is used when allowed; otherwise Android's inexact scheduling
+  is used, which may deliver late. Allow alarms/reminders in Android settings
+  for timely prayer alerts.
+- The master switch and each prayer switch update pending alarms immediately.
+  Disabling alerts cancels prayer alarms without cancelling diagnostic tests.
+- Each refresh calculates seven calendar days separately. Reopen the app at
+  least weekly to renew the schedule. Home refreshes at a date change and when
+  the app resumes. Sunrise does not produce an adhan notification.
+- Local audio selection is a **preview only**. Scheduled alerts use the bundled
+  adhan. Android notification channel sound can be changed in system settings.
+- Notification support in this version is Android only. Other platforms can
+  open the app without initializing Android notification services.
+
+### Physical device acceptance check
+
+1. Install the updated app and allow notifications, location, and exact alarms.
+2. Enable prayer notifications in Settings.
+3. Tap **Test Adhan After 30 Seconds**, put the app in the background, and lock
+   the phone. Confirm a visible notification and audible adhan after 30 seconds.
+4. Repeat with the app removed from Recents (do not use Android Force stop).
+5. Disable one prayer and confirm its IDs are absent from pending diagnostics;
+   disable the master switch and confirm all prayer IDs are removed.
+6. Re-enable alerts, reboot, and check a future prayer alarm is delivered.
+7. Check an actual prayer time on the target Samsung device.
+
+Channel settings, silent mode, Do Not Disturb, and manufacturer restrictions
+can affect sound. A notification sound is controlled by Android; this does not
+implement a foreground service guaranteeing uninterrupted full-length adhan.
+Automated tests check scheduling calls, preferences, IDs, timezone, and sound
+configuration; they cannot prove audible delivery on a physical device.
+
+## Three-screen Islamic design
+
+Home, Qibla, and Settings follow a royal blue / white / soft gold design with
+vector Islamic patterns, a mosque silhouette, rounded cards, and Cupertino
+icons. Calendar is intentionally absent from the navigation.
+
+- Arabic and English can be selected in Settings; layout direction changes
+  immediately. Theme and 12/24-hour time format are applied and persisted.
+- Apple platforms use the system font; Android uses the bundled IBM Plex Sans
+  Arabic font (OFL license included). No network font download is required.
+- Home uses the current GPS city when reverse geocoding is available. Offline
+  or unavailable city lookup falls back to a GPS label without inventing a city.
+- Qibla displays a live sensor heading, a rotating compass, great-circle distance
+  to the Kaaba, and signed hemisphere coordinates. If there is no sensor, the
+  screen explicitly shows the bearing relative to north. Calibration provides
+  figure-eight instructions; it does not pretend to calibrate the sensor itself.
+- The adhan switch selects a separate silent notification channel when disabled,
+  keeping visible prayer reminders. Audio volume in Settings affects the preview
+  only; Android controls notification channel volume and sound.
+
+To capture rendered previews while running the design flow test:
+
+```sh
+flutter test --dart-define=CAPTURE_UI=true test/design_flow_test.dart
+```
+
+Images are written to `build/design-previews`. Test fixtures supply location and
+sensor data for these previews; production screens use the device GPS and sensor.

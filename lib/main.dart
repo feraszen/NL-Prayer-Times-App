@@ -6,13 +6,7 @@ import 'core/services/notification_service.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await NotificationService.instance
-      .initialize();
+  await NotificationService.instance.initialize();
 
-  await NotificationService.instance
-      .requestPermissions();
-
-  runApp(
-    const NLPrayerTimesApp(),
-  );
+  runApp(const NLPrayerTimesApp());
 }

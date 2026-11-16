@@ -12,6 +12,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  flutter_localizations:
+    sdk: flutter
+
   cupertino_icons: ^1.0.8
 
   # Location Services
@@ -22,7 +25,7 @@ dependencies:
   adhan: ^2.0.0
 
   # Date & Time
-  intl: ^0.20.3
+  intl: ^0.20.2
 
   # Hijri Calendar
   hijri: ^3.0.0
@@ -55,6 +58,12 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/audio/adhan.mp3
+  fonts:
+    - family: IBM Plex Sans Arabic
+      fonts:
+        - asset: assets/fonts/IBMPlexSansArabic-Regular.ttf
 
 flutter_launcher_icons:
   android: true

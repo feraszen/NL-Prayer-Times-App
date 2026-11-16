@@ -9,27 +9,15 @@ class ReverseGeocodingService {
     required double longitude,
   }) async {
     if (kIsWeb) {
-      return Placemark(
-        locality: 'St. John\'s',
-        administrativeArea:
-            'Newfoundland and Labrador',
-        country: 'Canada',
-      );
+      return Placemark();
     }
 
-    final placemarks =
-        await placemarkFromCoordinates(
-      latitude,
-      longitude,
-    );
+    final placemarks = await placemarkFromCoordinates(latitude, longitude);
 
     if (placemarks.isEmpty) {
-      throw Exception(
-        'No placemark found.',
-      );
+      throw Exception('No placemark found.');
     }
 
     return placemarks.first;
   }
 }
-
