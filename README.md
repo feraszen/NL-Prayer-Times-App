@@ -29,8 +29,19 @@ flutter run
 - Each refresh calculates seven calendar days separately. Reopen the app at
   least weekly to renew the schedule. Home refreshes at a date change and when
   the app resumes. Sunrise does not produce an adhan notification.
-- Local audio selection is a **preview only**. Scheduled alerts use the bundled
-  adhan. Android notification channel sound can be changed in system settings.
+- In Settings, tap **Adhan or alert audio** to choose MP3, WAV, M4A or OGG from
+  the phone (up to 50 MB). Valid audio is copied into app storage and, on Android
+  10+, published as app-owned notification audio in MediaStore without broad
+  storage permission. The chosen file is used for all five prayer alerts and
+  both diagnostic tests, including when the app is closed. Preview volume only
+  affects previews; Android controls notification volume and playback duration.
+- Selecting a different file creates a content-specific notification channel
+  and reschedules prayer alarms. Restore bundled adhan returns to the original
+  sound. Existing scheduled alarms keep their sound until successfully renewed.
+  Cancellation, unreadable files, and rescheduling failures retain the prior choice.
+  The saved audio must not be deleted from the phone's Notifications folder.
+- Android 7–9 uses a restricted FileProvider with read grants to the system
+  notification player. Test audio delivery and reboot behavior on older devices.
 - Notification support in this version is Android only. Other platforms can
   open the app without initializing Android notification services.
 

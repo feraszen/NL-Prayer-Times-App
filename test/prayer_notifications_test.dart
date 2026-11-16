@@ -140,6 +140,49 @@ void main() {
     expect(android['playSound'], isFalse);
   });
 
+  test('imported audio drives real prayer alerts and diagnostics', () async {
+    SharedPreferences.setMockInitialValues({
+      'custom_adhan_uri': 'content://media/external/audio/media/123',
+      'custom_adhan_token': 'audio123',
+    });
+    await NotificationService.instance.schedulePrayerNotificationAtTime(
+      id: 1,
+      prayerName: 'Fajr',
+      prayerTime: DateTime.now().add(const Duration(hours: 1)),
+    );
+    await NotificationService.instance.showTestNotification();
+    await NotificationService.instance.scheduleNotificationIn30Seconds();
+    for (final call in calls.where(
+      (c) => c.method == 'zonedSchedule' || c.method == 'show',
+    )) {
+      final android = (call.arguments as Map)['platformSpecifics'] as Map;
+      expect(android['channelId'], 'prayer_custom_audio123');
+      expect(android['sound'], 'content://media/external/audio/media/123');
+      expect(android['soundSource'], 1);
+    }
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(
+      'custom_adhan_uri',
+      'content://media/external/audio/media/456',
+    );
+    await prefs.setString('custom_adhan_token', 'audio456');
+    calls.clear();
+    await NotificationService.instance.showTestNotification();
+    expect(
+      ((calls.single.arguments as Map)['platformSpecifics']
+          as Map)['channelId'],
+      'prayer_custom_audio456',
+    );
+    await prefs.setBool('adhan_enabled', false);
+    calls.clear();
+    await NotificationService.instance.showTestNotification();
+    expect(
+      ((calls.single.arguments as Map)['platformSpecifics']
+          as Map)['playSound'],
+      false,
+    );
+  });
+
   test('past prayers are not scheduled', () async {
     await NotificationService.instance.schedulePrayerNotificationAtTime(
       id: 1,

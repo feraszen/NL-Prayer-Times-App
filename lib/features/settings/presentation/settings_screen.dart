@@ -4,10 +4,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:path/path.dart' as path;
 import '../../../app/app_preferences.dart';
 import '../../../core/presentation/islamic_decoration.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/services/custom_adhan_service.dart';
 import '../../../core/services/prayer_notification_scheduler.dart';
 import '../../../core/services/settings_service.dart';
 import '../../location/data/providers/gps_location_provider.dart';
@@ -27,13 +27,65 @@ class _SettingsScreenState extends State<SettingsScreen> {
   StreamSubscription<void>? _completion;
   bool _playing = false, _busy = false;
   double _previewVolume = .7;
-  String? _previewPath;
+  String? _previewPath, _audioName;
+  final _audio = CustomAdhanService();
   @override
   void initState() {
     super.initState();
+    _loadAudio();
     _completion = _player.onPlayerComplete.listen((_) {
       if (mounted) setState(() => _playing = false);
     });
+  }
+
+  Future<void> _loadAudio() async {
+    final selected = await _audio.selection();
+    if (mounted) {
+      setState(() {
+        _previewPath = selected[CustomAdhanService.pathKey];
+        _audioName = selected[CustomAdhanService.nameKey];
+      });
+    }
+  }
+
+  Future<void> _chooseAudio(AppPreferences p) => _run(() async {
+    final files = await FilePicker.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['mp3', 'wav', 'm4a', 'ogg'],
+    );
+    if (files.isEmpty) return;
+    final file = files.first;
+    final filePath = file.path;
+    if (filePath == null) {
+      throw StateError('Choose a downloaded local audio file');
+    }
+    final selected = await _audio.importFile(filePath, file.name);
+    await _setAudio(p, selected);
+  });
+
+  Future<void> _setAudio(AppPreferences p, Map<String, String> selected) async {
+    final previous = await _audio.selection();
+    await _player.stop();
+    if (mounted) setState(() => _playing = false);
+    try {
+      await _audio.save(selected);
+      await _reschedule(p);
+    } catch (_) {
+      await _audio.restore(previous);
+      rethrow;
+    }
+    await _loadAudio();
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          p.text(
+            'تم حفظ الصوت لتنبيهات الصلاة. جرّب التنبيه الآن.',
+            'Audio saved for prayer alerts. Try a test notification.',
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -145,14 +197,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     _tile(
                       CupertinoIcons.waveform,
-                      p.text('صوت الأذان', 'Adhan voice'),
-                      p.text('أذان مكة المكرمة', 'Makkah adhan'),
-                      () => _info(
-                        p.text('صوت الأذان', 'Adhan voice'),
+                      p.text('صوت الأذان أو التنبيه', 'Adhan or alert audio'),
+                      _audioName ?? p.text('أذان مكة المكرمة', 'Makkah adhan'),
+                      native && !_busy ? () => _chooseAudio(p) : null,
+                    ),
+                    if (_audioName != null)
+                      _tile(
+                        CupertinoIcons.arrow_counterclockwise,
                         p.text(
-                          'يُستخدم الأذان المدمج للتنبيهات المجدولة. يمكنك تعديل صوت القناة من إعدادات إشعارات التطبيق في Android. اختيار ملف أدناه للمعاينة فقط.',
-                          'Scheduled reminders use the bundled adhan. Android notification settings control the channel sound. Local file selection below is for preview only.',
+                          'استعادة الأذان المدمج',
+                          'Restore bundled adhan',
                         ),
+                        '',
+                        native && !_busy
+                            ? () => _run(() => _setAudio(p, {}))
+                            : null,
+                      ),
+                    Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Text(
+                        p.text(
+                          'اضغط لاختيار ملف صوتي من هاتفك لجميع الصلوات. يُحفظ الملف للتنبيهات حتى بعد إغلاق التطبيق. يدعم MP3 وWAV وM4A وOGG حتى 50 ميغابايت. يتحكم Android بمستوى الصوت ومدة تشغيله.',
+                          'Tap to choose audio from your phone for all prayers. Audio is saved for alerts after closing the app. Supports MP3, WAV, M4A and OGG up to 50 MB. Android controls alert volume and playback duration.',
+                        ),
+                        style: const TextStyle(fontSize: 11),
                       ),
                     ),
                     _tile(
@@ -164,7 +232,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           : p.text('معاينة الأذان', 'Preview adhan'),
                       _previewPath == null
                           ? p.text('الصوت المدمج', 'Bundled audio')
-                          : path.basename(_previewPath!),
+                          : _audioName ?? p.text('ملف مخصص', 'Custom audio'),
                       () => _run(() async {
                         if (_playing) {
                           await _player.stop();
@@ -384,7 +452,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _tile(
                       CupertinoIcons.info_circle,
                       p.text('عن التطبيق', 'About the app'),
-                      '1.0.2',
+                      '1.0.3',
                       () => _info(
                         p.text('عن التطبيق', 'About the app'),
                         'NL Prayer Times\nFeras Zen Alabdeen\n\n${p.text('مواقيت الصلاة واتجاه القبلة أينما كنت.', 'Prayer times and Qibla wherever you are.')}',
@@ -402,23 +470,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: const TextStyle(fontSize: 13),
                     ),
                     children: [
-                      _tile(
-                        CupertinoIcons.folder,
-                        p.text('اختيار ملف للمعاينة', 'Choose preview file'),
-                        p.text(
-                          'لا يغيّر صوت التنبيه',
-                          'Does not change alert sound',
-                        ),
-                        () => _run(() async {
-                          final files = await FilePicker.pickFiles(
-                            type: FileType.custom,
-                            allowedExtensions: ['mp3', 'wav', 'm4a', 'ogg'],
-                          );
-                          if (files.isNotEmpty && mounted) {
-                            setState(() => _previewPath = files.first.path);
-                          }
-                        }),
-                      ),
                       if (native) ...[
                         _tile(
                           CupertinoIcons.bell,
@@ -615,26 +666,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
     value: value,
     onChanged: onChanged,
   );
-  Widget _tile(IconData icon, String label, String value, VoidCallback onTap) =>
-      ListTile(
-        leading: Icon(
-          icon,
-          size: 21,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        title: Text(label, style: const TextStyle(fontSize: 14)),
-        subtitle: value.isEmpty
-            ? null
-            : Text(
-                value,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-        trailing: const Icon(CupertinoIcons.chevron_forward, size: 14),
-        onTap: onTap,
-      );
+  Widget _tile(
+    IconData icon,
+    String label,
+    String value,
+    VoidCallback? onTap,
+  ) => ListTile(
+    leading: Icon(icon, size: 21, color: Theme.of(context).colorScheme.primary),
+    title: Text(label, style: const TextStyle(fontSize: 14)),
+    subtitle: value.isEmpty
+        ? null
+        : Text(
+            value,
+            style: TextStyle(
+              fontSize: 11,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+    trailing: const Icon(CupertinoIcons.chevron_forward, size: 14),
+    onTap: onTap,
+  );
   Future<void> _info(String title, String body) => showDialog<void>(
     context: context,
     builder: (context) => AlertDialog(

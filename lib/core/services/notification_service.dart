@@ -5,6 +5,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+import 'custom_adhan_service.dart';
+
 import '../../features/prayer_times/domain/models/prayer_times.dart';
 
 class NotificationService {
@@ -52,10 +54,27 @@ class NotificationService {
     ),
   );
   Future<NotificationDetails> _details() async {
-    final enabled =
-        (await SharedPreferences.getInstance()).getBool('adhan_enabled') ??
-        true;
-    return enabled ? prayerDetails : silentPrayerDetails;
+    final prefs = await SharedPreferences.getInstance();
+    if (!(prefs.getBool('adhan_enabled') ?? true)) return silentPrayerDetails;
+    final uri = prefs.getString(CustomAdhanService.uriKey);
+    final token = prefs.getString(CustomAdhanService.tokenKey);
+    if (uri == null || token == null) return prayerDetails;
+    // Android channel sounds are immutable. Each imported audio has its own
+    // content-derived channel so it cannot retain a previous file's sound.
+    return NotificationDetails(
+      android: AndroidNotificationDetails(
+        'prayer_custom_$token',
+        'Prayer Notifications',
+        channelDescription: 'Prayer times with selected audio',
+        importance: Importance.max,
+        priority: Priority.high,
+        sound: UriAndroidNotificationSound(uri),
+        playSound: true,
+        enableVibration: true,
+        category: AndroidNotificationCategory.reminder,
+        visibility: NotificationVisibility.public,
+      ),
+    );
   }
 
   Future<AndroidScheduleMode> scheduleMode() async {
@@ -146,7 +165,7 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
-    await notifications.show(id, title, body, prayerDetails);
+    await notifications.show(id, title, body, await _details());
   }
 
   Future<void> schedulePrayerNotificationAtTime({
