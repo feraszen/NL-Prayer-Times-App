@@ -6,6 +6,7 @@ import 'package:intl/intl.dart' hide TextDirection;
 import '../../../app/app_preferences.dart';
 import '../../../app/theme/app_colors.dart';
 import '../../../core/presentation/islamic_decoration.dart';
+import '../../../core/services/settings_service.dart';
 import '../../prayer_times/domain/models/prayer_type.dart';
 import '../../prayer_times/domain/services/prayer_service.dart';
 import 'widgets/home_prayer_loader.dart';
@@ -42,7 +43,11 @@ class _HomeScreenRealState extends State<HomeScreenReal> {
   Widget build(BuildContext context) {
     final p = AppScope.of(context);
     return HomePrayerLoader(
-      key: ValueKey(_revision),
+      key: ValueKey((
+        _revision,
+        p.prayerSource,
+        p.adjustments.values.join(','),
+      )),
       locationBuilder: (times, location) => ValueListenableBuilder<DateTime>(
         valueListenable: _clock,
         builder: (context, now, _) {
@@ -290,10 +295,15 @@ class _HomeScreenRealState extends State<HomeScreenReal> {
                                 const SizedBox(width: 6),
                                 Flexible(
                                   child: Text(
-                                    p.text(
-                                      'ISNA · الشافعي · حسب موقعك',
-                                      'ISNA · Shafi · Based on your location',
-                                    ),
+                                    p.prayerSource == PrayerTimeSource.alFalah
+                                        ? p.text(
+                                            'سانت جونز · أوقات بدء الصلاة',
+                                            'St. John’s · Prayer start times',
+                                          )
+                                        : p.text(
+                                            'ISNA · الشافعي · حسب موقعك',
+                                            'ISNA · Shafi · Based on your location',
+                                          ),
                                     style: TextStyle(
                                       fontSize: 11,
                                       color: Theme.of(

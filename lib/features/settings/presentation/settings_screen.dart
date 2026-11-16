@@ -13,6 +13,7 @@ import '../../../core/services/settings_service.dart';
 import '../../location/data/providers/gps_location_provider.dart';
 import '../../location/domain/models/location_data.dart';
 import '../../prayer_times/data/providers/real_prayer_times_provider.dart';
+import '../../prayer_times/data/providers/alfalah_prayer_times_provider.dart';
 import '../../prayer_times/data/services/prayer_times_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -68,23 +69,41 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return;
     }
     await NotificationService.instance.requestPermissions();
-    final pos = await const GpsLocationProvider().getCurrentPosition();
-    await PrayerNotificationScheduler(
-      prayerTimesService: const PrayerTimesService(
-        provider: RealPrayerTimesProvider(),
-      ),
-      settingsService: p.storage,
-    ).scheduleNotifications(
-      location: LocationData(
+    late LocationData location;
+    if (p.prayerSource == PrayerTimeSource.alFalah) {
+      location = AlFalahPrayerTimesProvider.location;
+    } else {
+      final pos = await const GpsLocationProvider().getCurrentPosition();
+      location = LocationData(
         latitude: pos.latitude,
         longitude: pos.longitude,
         country: '',
         region: '',
         city: '',
         timeZone: DateTime.now().timeZoneName,
+      );
+    }
+    await PrayerNotificationScheduler(
+      prayerTimesService: const PrayerTimesService(
+        provider: RealPrayerTimesProvider(),
       ),
-    );
+      settingsService: p.storage,
+    ).scheduleNotifications(location: location);
   }
+
+  Future<void> _changeTiming(
+    Future<void> Function() change,
+    Future<void> Function() undo,
+    AppPreferences p,
+  ) => _run(() async {
+    try {
+      await change();
+      await _reschedule(p);
+    } catch (_) {
+      await undo();
+      rethrow;
+    }
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -234,6 +253,68 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         style: const TextStyle(fontSize: 12),
                       ),
                     ),
+                  _heading(
+                    p.text(
+                      'مصدر المواقيت وضبطها',
+                      'Prayer time source & adjustments',
+                    ),
+                  ),
+                  _group([
+                    _tile(
+                      CupertinoIcons.building_2_fill,
+                      p.text('مصدر المواقيت', 'Prayer time source'),
+                      p.prayerSource == PrayerTimeSource.alFalah
+                          ? p.text('مواقيت سانت جونز', 'St. John’s timetable')
+                          : p.text(
+                              'حساب ISNA حسب GPS',
+                              'ISNA calculation using GPS',
+                            ),
+                      () => _choose<PrayerTimeSource>(
+                        p.text('مصدر المواقيت', 'Prayer time source'),
+                        PrayerTimeSource.values,
+                        [
+                          p.text(
+                            'حساب ISNA حسب GPS',
+                            'ISNA calculation using GPS',
+                          ),
+                          p.text('مواقيت سانت جونز', 'St. John’s timetable'),
+                        ],
+                        p.prayerSource,
+                        (value) {
+                          final old = p.prayerSource;
+                          return _changeTiming(
+                            () => p.setPrayerSource(value),
+                            () => p.setPrayerSource(old),
+                            p,
+                          );
+                        },
+                      ),
+                    ),
+                    _tile(
+                      CupertinoIcons.slider_horizontal_3,
+                      p.text(
+                        'تعديل الدقائق لكل صلاة',
+                        'Adjust minutes per prayer',
+                      ),
+                      p.adjustments.values.any((value) => value != 0)
+                          ? p.text('تعديلات مخصصة', 'Custom adjustments')
+                          : p.text('بدون تعديل', 'No adjustments'),
+                      () => _adjustments(p),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 4, 16, 14),
+                      child: Text(
+                        p.text(
+                          'جدول أوقات بدء الصلاة لسانت جونز، وليس الإقامة. يتطلب الإنترنت لأول تحميل؛ تُحفظ الأيام للعمل دون اتصال. التعديلات اليدوية تؤثر في العرض والتنبيهات معًا.',
+                          'Prayer start times for St. John’s, not iqama. Internet is needed initially; fetched dates are cached offline. Manual adjustments apply to both display and alerts.',
+                        ),
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ]),
                   _heading(p.text('العام', 'General')),
                   _group([
                     _tile(
@@ -292,8 +373,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       () => _info(
                         p.text('طريقة الحساب', 'Calculation method'),
                         p.text(
-                          'ISNA — أمريكا الشمالية\nالفجر: 15° · العشاء: 15°\nالعصر: المذهب الشافعي\nتُحسب الأوقات حسب موقع GPS والمنطقة الزمنية للهاتف.',
-                          'ISNA — North America\nFajr: 15° · Isha: 15°\nAsr: Shafi\nTimes use your GPS location and phone timezone.',
+                          'ISNA — أمريكا الشمالية\nالفجر: 15° · العشاء: 15°\nالعصر: المذهب الشافعي\nفي وضع GPS تُحسب الأوقات حسب موقعك. في وضع جدول المدينة تُستخدم مواقيت سانت جونز.',
+                          'ISNA — North America\nFajr: 15° · Isha: 15°\nAsr: Shafi\nGPS mode uses your location. City timetable mode uses St. John’s prayer times.',
                         ),
                       ),
                     ),
@@ -303,7 +384,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _tile(
                       CupertinoIcons.info_circle,
                       p.text('عن التطبيق', 'About the app'),
-                      '1.0.0',
+                      '1.0.2',
                       () => _info(
                         p.text('عن التطبيق', 'About the app'),
                         'NL Prayer Times\nFeras Zen Alabdeen\n\n${p.text('مواقيت الصلاة واتجاه القبلة أينما كنت.', 'Prayer times and Qibla wherever you are.')}',
@@ -399,6 +480,97 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+
+  Future<void> _adjustments(AppPreferences p) => showModalBottomSheet<void>(
+    context: context,
+    showDragHandle: true,
+    isScrollControlled: true,
+    builder: (sheetContext) {
+      var pending = false;
+      return StatefulBuilder(
+        builder: (context, updateSheet) => SafeArea(
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(18, 8, 18, 24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    p.text(
+                      'تعديل الدقائق لكل صلاة',
+                      'Adjust minutes per prayer',
+                    ),
+                    style: const TextStyle(
+                      fontSize: 19,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    p.text(
+                      'القيمة الموجبة تؤخر الوقت، والسالبة تقدّمه. اتركها صفرًا لمطابقة المصدر دون تعديل.',
+                      'Positive values delay the time; negative values make it earlier. Leave zero to follow the selected source unchanged.',
+                    ),
+                    style: const TextStyle(fontSize: 12),
+                  ),
+                  const SizedBox(height: 12),
+                  for (final type in p.adjustments.keys)
+                    ListTile(
+                      title: Text(p.prayerName(type)),
+                      subtitle: Text(
+                        '${p.adjustments[type]! > 0 ? '+' : ''}${p.adjustments[type]} ${p.text('دقيقة', 'min')}',
+                      ),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          for (final delta in [-1, 1])
+                            IconButton(
+                              tooltip: delta < 0
+                                  ? p.text('تقديم دقيقة', 'One minute earlier')
+                                  : p.text('تأخير دقيقة', 'One minute later'),
+                              icon: Icon(
+                                delta < 0
+                                    ? CupertinoIcons.minus_circle
+                                    : CupertinoIcons.plus_circle,
+                              ),
+                              onPressed:
+                                  pending ||
+                                      _busy ||
+                                      (p.adjustments[type]! + delta).abs() > 30
+                                  ? null
+                                  : () async {
+                                      final old = p.adjustments[type]!;
+                                      updateSheet(() => pending = true);
+                                      await _changeTiming(
+                                        () => p.setPrayerAdjustment(
+                                          type,
+                                          old + delta,
+                                        ),
+                                        () => p.setPrayerAdjustment(type, old),
+                                        p,
+                                      );
+                                      if (sheetContext.mounted) {
+                                        updateSheet(() => pending = false);
+                                      }
+                                    },
+                            ),
+                        ],
+                      ),
+                    ),
+                  TextButton(
+                    onPressed: pending
+                        ? null
+                        : () => Navigator.pop(sheetContext),
+                    child: Text(p.text('تم', 'Done')),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    },
+  );
 
   Widget _heading(String text) => Padding(
     padding: const EdgeInsets.fromLTRB(8, 18, 8, 9),

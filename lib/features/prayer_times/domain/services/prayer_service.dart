@@ -4,14 +4,11 @@ import '../models/prayer_times.dart';
 class PrayerService {
   const PrayerService();
 
-  PrayerTime getCurrentPrayer(
-    PrayerTimes prayerTimes,
-    DateTime now,
-  ) {
+  PrayerTime getCurrentPrayer(PrayerTimes prayerTimes, DateTime now) {
     final prayers = prayerTimes.allPrayers;
 
     for (int i = prayers.length - 1; i >= 0; i--) {
-      if (now.isAfter(prayers[i].time)) {
+      if (!now.isBefore(prayers[i].time)) {
         return prayers[i];
       }
     }
@@ -19,10 +16,7 @@ class PrayerService {
     return prayerTimes.isha;
   }
 
-  PrayerTime getNextPrayer(
-    PrayerTimes prayerTimes,
-    DateTime now,
-  ) {
+  PrayerTime getNextPrayer(PrayerTimes prayerTimes, DateTime now) {
     final prayers = prayerTimes.allPrayers;
 
     for (final prayer in prayers) {
@@ -31,25 +25,21 @@ class PrayerService {
       }
     }
 
-    return prayerTimes.fajr;
+    return prayerTimes.nextDayFajr ??
+        PrayerTime(
+          type: prayerTimes.fajr.type,
+          time: prayerTimes.fajr.time.add(const Duration(days: 1)),
+        );
   }
 
-  Duration getTimeRemaining(
-    PrayerTimes prayerTimes,
-    DateTime now,
-  ) {
-    final nextPrayer = getNextPrayer(
-      prayerTimes,
-      now,
-    );
+  Duration getTimeRemaining(PrayerTimes prayerTimes, DateTime now) {
+    final nextPrayer = getNextPrayer(prayerTimes, now);
 
     if (nextPrayer.time.isAfter(now)) {
       return nextPrayer.time.difference(now);
     }
 
-    final tomorrowFajr = nextPrayer.time.add(
-      const Duration(days: 1),
-    );
+    final tomorrowFajr = nextPrayer.time.add(const Duration(days: 1));
 
     return tomorrowFajr.difference(now);
   }

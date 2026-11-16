@@ -1,0 +1,21 @@
+{
+  "code": 200,
+  "data": {
+    "date": {
+      "gregorian": {
+        "date": "16-11-2026"
+      }
+    },
+    "meta": {
+      "timezone": "America/St_Johns"
+    },
+    "timings": {
+      "Fajr": "05:38",
+      "Sunrise": "07:07",
+      "Dhuhr": "11:46",
+      "Asr": "14:03",
+      "Maghrib": "16:23",
+      "Isha": "17:53"
+    }
+  }
+}

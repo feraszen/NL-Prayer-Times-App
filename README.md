@@ -80,3 +80,36 @@ flutter test --dart-define=CAPTURE_UI=true test/design_flow_test.dart
 
 Images are written to `build/design-previews`. Test fixtures supply location and
 sensor data for these previews; production screens use the device GPS and sensor.
+
+## Al-Falah prayer start times (1.0.1)
+
+Settings → Prayer time source offers **GPS ISNA** (the existing default) and
+**Al-Falah — St. John's**. The latter uses the exact daily calculation endpoint
+currently called by `https://alfalahnl.ca/`:
+
+`https://api.aladhan.com/v1/timingsByCity/DD-MM-YYYY?country=canada&city=st%20johns&method=2&school=0`
+
+It loads prayer **start** times, not mosque iqama times. Dates and the
+`America/St_Johns` timezone are validated, fetched dates are cached, and duplicate
+requests for a date share one fetch. Online data is refreshed on a subsequent
+calendar day; if unavailable, a valid cache for that same requested date is used.
+Missing dates are never silently replaced by GPS calculations.
+
+Home and the seven-day notification scheduler use one loading/adjustment path.
+Five optional minute adjustments (-30…+30, initially zero) apply exactly once to
+both displayed times and alarms. Sunrise is not adjusted or notified. Home uses
+the selected source's actual next-day Fajr after Isha. All seven daily schedules
+must load before existing alarms are cancelled, so a failed source refresh leaves
+previously scheduled alarms intact. Switching a source or adjustment in Settings
+rolls back that preference if rescheduling fails.
+
+The November 16, 2026 screenshot matches the checked daily endpoint:
+05:38 / 07:07 / 11:46 / 14:03 / 16:23 / 17:53. The older screenshots supplied for
+November 12–15 show Asr one minute later than the endpoint returns when checked
+now. Their historical discrepancy is recorded in the delivery comparison file;
+no permanent global +1/+2 minute shift or daily hardcoded prayer time is applied.
+The app follows the calculation source currently used by the website; this is
+not an official historical timetable archive or an iqama synchronization service.
+
+The source requires Internet access when a requested date has not been saved.
+After selecting Al-Falah, leave manual adjustments at zero to follow it directly.

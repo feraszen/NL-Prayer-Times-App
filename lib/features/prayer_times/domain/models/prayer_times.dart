@@ -7,6 +7,7 @@ class PrayerTimes {
   final PrayerTime asr;
   final PrayerTime maghrib;
   final PrayerTime isha;
+  final PrayerTime? nextDayFajr;
 
   const PrayerTimes({
     required this.fajr,
@@ -15,13 +16,8 @@ class PrayerTimes {
     required this.asr,
     required this.maghrib,
     required this.isha,
+    this.nextDayFajr,
   });
 
-  List<PrayerTime> get allPrayers => [
-        fajr,
-        dhuhr,
-        asr,
-        maghrib,
-        isha,
-      ];
+  List<PrayerTime> get allPrayers => [fajr, dhuhr, asr, maghrib, isha];
 }

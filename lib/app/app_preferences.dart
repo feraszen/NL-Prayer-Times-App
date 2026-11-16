@@ -16,6 +16,11 @@ class AppPreferences extends ChangeNotifier {
   String language = 'ar';
   bool notifications = false;
   bool adhanEnabled = true;
+  PrayerTimeSource prayerSource = PrayerTimeSource.gps;
+  final adjustments = <PrayerType, int>{
+    for (final p in PrayerType.values)
+      if (p != PrayerType.sunrise) p: 0,
+  };
   final Map<PrayerType, bool> alerts = {
     for (final p in PrayerType.values)
       if (p != PrayerType.sunrise) p: true,
@@ -42,10 +47,24 @@ class AppPreferences extends ChangeNotifier {
     timeFormat = await storage.getTimeFormat();
     language = prefs.getString('app_language') ?? 'ar';
     notifications = await storage.getNotificationsEnabled();
+    prayerSource = await storage.getPrayerTimeSource();
+    adjustments.addAll(await storage.getPrayerAdjustments());
     adhanEnabled = prefs.getBool('adhan_enabled') ?? true;
     for (final p in alerts.keys) {
       alerts[p] = prefs.getBool('${p.name}_notification') ?? true;
     }
+    if (!_disposed) notifyListeners();
+  }
+
+  Future<void> setPrayerSource(PrayerTimeSource value) async {
+    await storage.savePrayerTimeSource(value);
+    prayerSource = value;
+    if (!_disposed) notifyListeners();
+  }
+
+  Future<void> setPrayerAdjustment(PrayerType type, int minutes) async {
+    await storage.savePrayerAdjustment(type, minutes);
+    adjustments[type] = minutes;
     if (!_disposed) notifyListeners();
   }
 

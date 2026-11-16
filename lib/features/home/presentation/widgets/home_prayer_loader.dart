@@ -11,6 +11,9 @@ import '../../../location/data/services/reverse_geocoding_service.dart';
 import '../../../location/domain/models/location_data.dart';
 
 import '../../../prayer_times/data/providers/real_prayer_times_provider.dart';
+import '../../../prayer_times/data/providers/alfalah_prayer_times_provider.dart';
+import '../../../prayer_times/data/services/prayer_schedule_loader.dart';
+import '../../../../app/app_preferences.dart';
 import '../../../prayer_times/data/services/prayer_times_service.dart';
 
 import '../../../prayer_times/domain/models/prayer_times.dart';
@@ -32,6 +35,10 @@ class _HomePrayerLoaderState extends State<HomePrayerLoader>
   Timer? _refreshTimer;
   DateTime? _loadedDate;
   bool _loading = false;
+  PrayerTimeSource _source = PrayerTimeSource.gps;
+  DateTime get _now => _source == PrayerTimeSource.alFalah
+      ? AlFalahPrayerTimesProvider.now
+      : DateTime.now();
   PrayerTimes? prayerTimes;
   LocationData? location;
 
@@ -43,7 +50,7 @@ class _HomePrayerLoaderState extends State<HomePrayerLoader>
     WidgetsBinding.instance.addObserver(this);
     loadPrayerTimes();
     _refreshTimer = Timer.periodic(const Duration(minutes: 1), (_) {
-      final now = DateTime.now();
+      final now = _now;
       if (_loadedDate?.day != now.day ||
           _loadedDate?.month != now.month ||
           _loadedDate?.year != now.year) {
@@ -70,37 +77,47 @@ class _HomePrayerLoaderState extends State<HomePrayerLoader>
     if (_loading) return;
     _loading = true;
     try {
-      final position = await const GpsLocationProvider().getCurrentPosition();
-
-      var city = '';
-      var region = '';
-      try {
-        final place = await const ReverseGeocodingService()
-            .getPlacemark(
-              latitude: position.latitude,
-              longitude: position.longitude,
-            )
-            .timeout(const Duration(seconds: 3));
-        city = place.locality ?? '';
-        region = place.administrativeArea ?? '';
-      } catch (_) {
-        /* Coordinates and prayer times still work offline. */
+      final settings = SettingsService();
+      final source = await settings.getPrayerTimeSource();
+      _source = source;
+      final adjustments = await settings.getPrayerAdjustments();
+      late LocationData resolvedLocation;
+      if (source == PrayerTimeSource.alFalah) {
+        resolvedLocation = AlFalahPrayerTimesProvider.location;
+      } else {
+        final position = await const GpsLocationProvider().getCurrentPosition();
+        var city = '', region = '';
+        try {
+          final place = await const ReverseGeocodingService()
+              .getPlacemark(
+                latitude: position.latitude,
+                longitude: position.longitude,
+              )
+              .timeout(const Duration(seconds: 3));
+          city = place.locality ?? '';
+          region = place.administrativeArea ?? '';
+        } catch (_) {
+          /* City lookup must not prevent GPS prayer calculations. */
+        }
+        resolvedLocation = LocationData(
+          latitude: position.latitude,
+          longitude: position.longitude,
+          country: '',
+          region: region,
+          city: city,
+          timeZone: DateTime.now().timeZoneName,
+        );
       }
-      final resolvedLocation = LocationData(
-        latitude: position.latitude,
-        longitude: position.longitude,
-        country: '',
-        region: region,
-        city: city,
-        timeZone: DateTime.now().timeZoneName,
-      );
       final service = PrayerTimesService(
         provider: const RealPrayerTimesProvider(),
       );
 
-      final result = service.getPrayerTimes(
-        latitude: position.latitude,
-        longitude: position.longitude,
+      final result = await PrayerScheduleLoader(localService: service).load(
+        location: resolvedLocation,
+        date: _now,
+        source: source,
+        adjustments: adjustments,
+        includeTomorrow: true,
       );
 
       if (NotificationService.isSupported) {
@@ -110,16 +127,7 @@ class _HomePrayerLoaderState extends State<HomePrayerLoader>
             settingsService: SettingsService(),
           );
 
-          await scheduler.scheduleNotifications(
-            location: LocationData(
-              latitude: position.latitude,
-              longitude: position.longitude,
-              country: '',
-              region: '',
-              city: '',
-              timeZone: DateTime.now().timeZoneName,
-            ),
-          );
+          await scheduler.scheduleNotifications(location: resolvedLocation);
         } catch (error) {
           debugPrint('Prayer notification scheduling failed: $error');
         }
@@ -130,7 +138,7 @@ class _HomePrayerLoaderState extends State<HomePrayerLoader>
       setState(() {
         prayerTimes = result;
         location = resolvedLocation;
-        _loadedDate = DateTime.now();
+        _loadedDate = _now;
         errorMessage = null;
       });
     } catch (e) {
@@ -147,10 +155,32 @@ class _HomePrayerLoaderState extends State<HomePrayerLoader>
   @override
   Widget build(BuildContext context) {
     if (errorMessage != null) {
+      final p = AppScope.of(context);
       return Center(
         child: Padding(
           padding: const EdgeInsets.all(24),
-          child: Text(errorMessage!, textAlign: TextAlign.center),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                _source == PrayerTimeSource.alFalah
+                    ? p.text(
+                        'تعذر تحميل مواقيت سانت جونز لهذا التاريخ. اتصل بالإنترنت وأعد المحاولة. لم تُستبدل مواقيت المدينة بحساب GPS.',
+                        'Unable to load the St. John’s timetable for this date. Connect to the internet and retry. GPS times have not been substituted.',
+                      )
+                    : p.text(
+                        'تعذر تحميل المواقيت. تحقق من تشغيل الموقع وصلاحياته.',
+                        'Could not load prayer times. Check location services and permissions.',
+                      ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: loadPrayerTimes,
+                child: Text(p.text('إعادة المحاولة', 'Retry')),
+              ),
+            ],
+          ),
         ),
       );
     }
