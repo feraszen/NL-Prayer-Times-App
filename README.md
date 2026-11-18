@@ -126,3 +126,11 @@ not an official historical timetable archive or an iqama synchronization service
 
 The source requires Internet access when a requested date has not been saved.
 After selecting Al-Falah, leave manual adjustments at zero to follow it directly.
+
+## iOS compilation on Codemagic
+
+Use the manual `ios-unsigned` workflow in `codemagic.yaml` to check native iPhone
+compilation on a cloud Mac without signing credentials. See
+[the iOS build guide](docs/IOS_CODEMAGIC.md). The resulting unsigned `.app` ZIP
+cannot be installed on an iPhone or sent to TestFlight without Apple signing.
+Android-only prayer alerts and custom notification audio still need iOS support.
