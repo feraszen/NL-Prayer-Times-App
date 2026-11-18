@@ -3,7 +3,6 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import '../../../app/app_preferences.dart';
 import '../../../core/presentation/islamic_decoration.dart';
 import '../../../core/services/notification_service.dart';
@@ -80,8 +79,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       SnackBar(
         content: Text(
           p.text(
-            'تم حفظ الصوت لتنبيهات الصلاة. جرّب التنبيه الآن.',
-            'Audio saved for prayer alerts. Try a test notification.',
+            'تم حفظ الصوت لتنبيهات الصلاة.',
+            'Audio saved for prayer alerts.',
           ),
         ),
       ),
@@ -452,77 +451,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _tile(
                       CupertinoIcons.info_circle,
                       p.text('عن التطبيق', 'About the app'),
-                      '1.0.3',
+                      '1.0.4',
                       () => _info(
                         p.text('عن التطبيق', 'About the app'),
                         'NL Prayer Times\nFeras Zen Alabdeen\n\n${p.text('مواقيت الصلاة واتجاه القبلة أينما كنت.', 'Prayer times and Qibla wherever you are.')}',
                       ),
                     ),
                   ]),
-                  const SizedBox(height: 12),
-                  ExpansionTile(
-                    tilePadding: const EdgeInsets.symmetric(horizontal: 10),
-                    title: Text(
-                      p.text(
-                        'خيارات الصوت والاختبار',
-                        'Audio & testing options',
-                      ),
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                    children: [
-                      if (native) ...[
-                        _tile(
-                          CupertinoIcons.bell,
-                          p.text('تجربة التنبيه الآن', 'Test alert now'),
-                          '',
-                          () => _run(
-                            NotificationService.instance.showTestNotification,
-                          ),
-                        ),
-                        _tile(
-                          CupertinoIcons.timer,
-                          p.text('تجربة بعد 30 ثانية', 'Test after 30 seconds'),
-                          '',
-                          () => _run(() async {
-                            await NotificationService.instance
-                                .scheduleNotificationIn30Seconds();
-                            if (!context.mounted) return;
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                  p.text(
-                                    'تمت الجدولة. اقفل الشاشة وانتظر 30 ثانية.',
-                                    'Scheduled. Lock your screen and wait 30 seconds.',
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ),
-                        _tile(
-                          CupertinoIcons.gear,
-                          p.text('إعدادات Android', 'Android app settings'),
-                          '',
-                          () => Geolocator.openAppSettings(),
-                        ),
-                      ],
-                      Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Text(
-                          p.text(
-                            'افتح التطبيق أسبوعيًا لتجديد الجدولة. يتحكم Android بصوت التنبيهات ووضع عدم الإزعاج.',
-                            'Open the app weekly to renew the schedule. Android controls notification volume and Do Not Disturb.',
-                          ),
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),

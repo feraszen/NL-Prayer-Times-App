@@ -17,7 +17,7 @@ flutter run
 
 ## Android prayer notifications
 
-- Scheduled and immediate prayer tests use `prayer_channel_v2` and the bundled
+- The default prayer sound uses `prayer_channel_v2` and the bundled
   `android/app/src/main/res/raw/adhan.mp3` (copied from `adhan_makkah.mp3`).
 - The manifest declares the scheduled notification receiver and boot receiver.
   Pending alarms can be restored after reboot or an app update.
@@ -25,15 +25,15 @@ flutter run
   is used, which may deliver late. Allow alarms/reminders in Android settings
   for timely prayer alerts.
 - The master switch and each prayer switch update pending alarms immediately.
-  Disabling alerts cancels prayer alarms without cancelling diagnostic tests.
+  Disabling alerts cancels prayer alarms.
 - Each refresh calculates seven calendar days separately. Reopen the app at
   least weekly to renew the schedule. Home refreshes at a date change and when
   the app resumes. Sunrise does not produce an adhan notification.
 - In Settings, tap **Adhan or alert audio** to choose MP3, WAV, M4A or OGG from
   the phone (up to 50 MB). Valid audio is copied into app storage and, on Android
   10+, published as app-owned notification audio in MediaStore without broad
-  storage permission. The chosen file is used for all five prayer alerts and
-  both diagnostic tests, including when the app is closed. Preview volume only
+  storage permission. The chosen file is used for all five prayer alerts,
+  including when the app is closed. Preview volume only
   affects previews; Android controls notification volume and playback duration.
 - Selecting a different file creates a content-specific notification channel
   and reschedules prayer alarms. Restore bundled adhan returns to the original
@@ -49,13 +49,15 @@ flutter run
 
 1. Install the updated app and allow notifications, location, and exact alarms.
 2. Enable prayer notifications in Settings.
-3. Tap **Test Adhan After 30 Seconds**, put the app in the background, and lock
-   the phone. Confirm a visible notification and audible adhan after 30 seconds.
-4. Repeat with the app removed from Recents (do not use Android Force stop).
-5. Disable one prayer and confirm its IDs are absent from pending diagnostics;
-   disable the master switch and confirm all prayer IDs are removed.
-6. Re-enable alerts, reboot, and check a future prayer alarm is delivered.
-7. Check an actual prayer time on the target Samsung device.
+3. Confirm the displayed next prayer time, put the app in the background, and
+   lock the phone. Confirm a visible notification and selected audio at that time.
+4. Repeat for a future prayer with the app removed from Recents (do not Force stop).
+5. Disable an individual prayer or the master switch and confirm those reminders
+   are not delivered; re-enable alerts afterwards.
+6. Reboot and check a future prayer alarm is delivered.
+
+The user-facing **Audio & testing options** section was removed in 1.0.4.
+Custom adhan selection, preview, and regular prayer notification settings remain.
 
 Channel settings, silent mode, Do Not Disturb, and manufacturer restrictions
 can affect sound. A notification sound is controlled by Android; this does not
