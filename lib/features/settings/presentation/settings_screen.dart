@@ -596,7 +596,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     _tile(
                       CupertinoIcons.info_circle,
                       p.text('عن التطبيق', 'About the app'),
-                      '1.1.0',
+                      '1.1.1',
                       () => _info(
                         p.text('عن التطبيق', 'About the app'),
                         'NL Prayer Times\nFeras Zen Alabdeen\n\n${p.text('مواقيت الصلاة واتجاه القبلة أينما كنت.', 'Prayer times and Qibla wherever you are.')}',

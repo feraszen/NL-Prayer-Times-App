@@ -1,4 +1,4 @@
-# iOS 1.1.0 test build on Codemagic
+# iOS 1.1.x test build on Codemagic
 
 Use the existing manual `ios-unsigned` workflow (**iOS unsigned build check**)
 from the newest `main` commit. No automatic trigger, signing credentials or
@@ -16,7 +16,7 @@ store publishing are configured. Each build consumes the account's Mac minutes.
 4. If any step fails, share its error log. Simulator/native test success cannot
    be claimed until this workflow actually runs successfully on the Mac.
 5. After success, download the **IPA** directly (no Windows repacking needed),
-   re-sign/install it with your existing Sideloadly setup, and confirm **1.1.0**
+   re-sign/install it with your existing Sideloadly setup, and confirm **1.1.1**
    in About. Neither artifact can be installed directly without Apple signing.
    TestFlight still requires appropriate Apple Developer membership/signing.
 

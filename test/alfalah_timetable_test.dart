@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -89,6 +90,100 @@ void main() {
     expect(times.asr.time.minute, isNot(30));
     client.close();
   });
+
+  test(
+    'timetable requests never follow redirects to other origins or plaintext',
+    () async {
+      var requests = 0;
+      final client = MockClient((request) async {
+        requests++;
+        expect(request.url.scheme, 'https');
+        expect(request.url.host, 'api.aladhan.com');
+        expect(request.followRedirects, false);
+        return http.Response(
+          '',
+          302,
+          headers: {'location': 'http://example.invalid/timings'},
+        );
+      });
+      await expectLater(
+        AlFalahPrayerTimesProvider(client: client).getPrayerTimes(date: date),
+        throwsA(isA<StateError>()),
+      );
+      expect(requests, 1);
+      expect(
+        (await SharedPreferences.getInstance()).getString(
+          'alfalah_day_v1_2026-11-16',
+        ),
+        isNull,
+      );
+      client.close();
+    },
+  );
+
+  test(
+    'oversized declared timetable is rejected and does not overwrite a valid cached date',
+    () async {
+      await AlFalahPrayerTimesProvider(
+        client: MockClient(
+          (_) async => http.Response(jsonEncode(fixture), 200),
+        ),
+      ).getPrayerTimes(date: date);
+      final prefs = await SharedPreferences.getInstance();
+      final before =
+          jsonDecode(prefs.getString('alfalah_day_v1_2026-11-16')!)
+              as Map<String, dynamic>;
+      before['fetchedOn'] = '2026-11-15';
+      final old = jsonEncode(before);
+      await prefs.setString('alfalah_day_v1_2026-11-16', old);
+      final client = MockClient(
+        (_) async => http.Response(
+          'x' * (AlFalahPrayerTimesProvider.maxResponseBytes + 1),
+          200,
+        ),
+      );
+      final result = await AlFalahPrayerTimesProvider(
+        client: client,
+      ).getPrayerTimes(date: date);
+      expect(result.asr.time.minute, 3);
+      expect(prefs.getString('alfalah_day_v1_2026-11-16'), old);
+      client.close();
+    },
+  );
+
+  test(
+    'chunked body cannot bypass timetable byte limit and its stream is cancelled',
+    () async {
+      var cancelled = false;
+      late StreamController<List<int>> body;
+      body = StreamController<List<int>>(
+        onListen: () {
+          for (var n = 0; n < 70; n++) {
+            body.add(List.filled(1024, 32));
+          }
+          body.close();
+        },
+        onCancel: () {
+          cancelled = true;
+        },
+      );
+      final client = MockClient.streaming(
+        (_, _) async => http.StreamedResponse(body.stream, 200),
+      );
+      await expectLater(
+        AlFalahPrayerTimesProvider(client: client).getPrayerTimes(date: date),
+        throwsA(isA<FormatException>()),
+      );
+      expect(cancelled, true);
+      expect(
+        (await SharedPreferences.getInstance()).getString(
+          'alfalah_day_v1_2026-11-16',
+        ),
+        isNull,
+      );
+      client.close();
+    },
+  );
 
   test(
     'concurrent requests share one fetch and saved dates work offline',

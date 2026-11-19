@@ -143,3 +143,13 @@ An optional AlarmKit mode on iOS 26+ supplies the full selected sound to system
 prayer alarms. Its actual duration, custom audio and lock-screen delivery must
 be tested on the phone before claiming full background adhan or store readiness.
 The prior Audio & testing options section remains removed.
+
+## Security review and hardening (1.1.1)
+
+See [the scoped security review](docs/SECURITY_REVIEW.md) for findings, fixes,
+OSV dependency-check coverage and limitations. The update fixes this app's
+Android launch-configuration trust boundary, bounds timetable HTTP input,
+restricts redirects and removes unused iOS always-location declarations.
+This is not a certification against all vulnerabilities or device compromise.
+Android signing remains configured for local trials; production signing is still
+required before publishing. Rebuild/re-sign test artifacts to receive changes.

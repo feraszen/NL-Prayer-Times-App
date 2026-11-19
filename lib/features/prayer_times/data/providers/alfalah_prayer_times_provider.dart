@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -14,6 +15,7 @@ class AlFalahPrayerTimesProvider {
   AlFalahPrayerTimesProvider({this.client});
   static final instance = AlFalahPrayerTimesProvider();
   final http.Client? client;
+  static const maxResponseBytes = 64 * 1024;
   final _requests = <String, Future<Map<String, dynamic>>>{};
   static const timezoneName = 'America/St_Johns';
   static const location = LocationData(
@@ -45,6 +47,9 @@ class AlFalahPrayerTimesProvider {
     try {
       final raw = prefs.getString(key);
       if (raw != null) {
+        if (raw.length > maxResponseBytes) {
+          throw const FormatException('Oversized cached timetable');
+        }
         cached = jsonDecode(raw) as Map<String, dynamic>;
         _readDay(cached, date);
       }
@@ -85,12 +90,7 @@ class AlFalahPrayerTimesProvider {
       'method': '2',
       'school': '0',
     });
-    final response = await (client?.get(uri) ?? http.get(uri)).timeout(
-      const Duration(seconds: 10),
-    );
-    if (response.statusCode != 200) {
-      throw StateError('The St. John’s timetable source is unavailable.');
-    }
+    final response = await _getTimetable(uri);
     final body = jsonDecode(response.body) as Map<String, dynamic>;
     if (body['code'] != 200 || body['data'] is! Map) {
       throw const FormatException('Invalid mosque timetable.');
@@ -114,6 +114,61 @@ class AlFalahPrayerTimesProvider {
     ); // Validate ordering before replacing usable cache data.
     await prefs.setString(key, jsonEncode(entry));
     return entry;
+  }
+
+  Future<http.Response> _getTimetable(Uri uri) async {
+    final transport = client ?? http.Client();
+    StreamSubscription<List<int>>? subscription;
+    Timer? timer;
+    try {
+      // Never follow a server redirect to a different host or plaintext HTTP.
+      final request = http.Request('GET', uri)..followRedirects = false;
+      final response = await transport
+          .send(request)
+          .timeout(const Duration(seconds: 10));
+      if (response.statusCode != 200) {
+        throw StateError('The St. John’s timetable source is unavailable.');
+      }
+      if ((response.contentLength ?? 0) > maxResponseBytes) {
+        throw const FormatException('Oversized timetable response');
+      }
+      final done = Completer<List<int>>();
+      final bytes = <int>[];
+      timer = Timer(const Duration(seconds: 10), () {
+        if (!done.isCompleted) {
+          done.completeError(TimeoutException('Timetable download timed out'));
+        }
+      });
+      subscription = response.stream.listen(
+        (chunk) {
+          if (done.isCompleted) return;
+          if (chunk.length > maxResponseBytes - bytes.length) {
+            done.completeError(
+              const FormatException('Oversized timetable response'),
+            );
+          } else {
+            bytes.addAll(chunk);
+          }
+        },
+        onError: (Object error, StackTrace stack) {
+          if (!done.isCompleted) done.completeError(error, stack);
+        },
+        onDone: () {
+          if (!done.isCompleted) done.complete(bytes);
+        },
+        cancelOnError: true,
+      );
+      final body = await done.future;
+      return http.Response.bytes(
+        body,
+        response.statusCode,
+        headers: response.headers,
+      );
+    } finally {
+      timer?.cancel();
+      await subscription?.cancel();
+      if (client == null) transport.close();
+    }
   }
 
   static String _clock(dynamic value) {

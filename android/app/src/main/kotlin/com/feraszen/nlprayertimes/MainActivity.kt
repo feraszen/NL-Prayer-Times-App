@@ -2,6 +2,7 @@ package com.feraszen.nlprayertimes
 
 import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Build
@@ -9,7 +10,9 @@ import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.content.FileProvider
 import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterActivityLaunchConfigs.BackgroundMode
 import io.flutter.embedding.engine.FlutterEngine
+import io.flutter.embedding.engine.FlutterShellArgs
 import io.flutter.plugin.common.MethodChannel
 import java.io.File
 import java.security.MessageDigest
@@ -17,6 +20,24 @@ import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
     private val importer = Executors.newSingleThreadExecutor()
+
+    // This app has one fixed entrypoint and no external routes/cached engines.
+    // Flutter 3.44 accepts launch configuration from exported-Activity Intents;
+    // never let another app configure a release engine through those extras.
+    override fun getFlutterShellArgs(): FlutterShellArgs {
+        val debug = applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0
+        return if (debug) super.getFlutterShellArgs() else FlutterShellArgs(emptyArray<String>())
+    }
+    override fun getDartEntrypointFunctionName(): String = "main"
+    override fun getDartEntrypointArgs(): List<String>? = null
+    override fun getDartEntrypointLibraryUri(): String? = null
+    override fun getInitialRoute(): String = "/"
+    override fun getCachedEngineId(): String? = null
+    override fun getCachedEngineGroupId(): String? = null
+    override fun getBackgroundMode(): BackgroundMode = BackgroundMode.opaque
+    override fun shouldRestoreAndSaveState(): Boolean = true
+    override fun shouldHandleDeeplinking(): Boolean = false
+    override fun shouldDestroyEngineWithHost(): Boolean = true
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)

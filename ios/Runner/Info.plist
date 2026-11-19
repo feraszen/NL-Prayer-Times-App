@@ -94,17 +94,7 @@
 		NL Prayer Times uses your location to calculate accurate prayer times and determine Qibla direction.
 	</string>
 
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>
-		NL Prayer Times uses your location to calculate accurate prayer times and determine Qibla direction.
-	</string>
-
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>
-		NL Prayer Times uses your location to calculate accurate prayer times and determine Qibla direction.
-	</string>
-
-    <key>UIBackgroundModes</key>
+<key>UIBackgroundModes</key>
     <array><string>audio</string></array>
     <key>NSAlarmKitUsageDescription</key>
     <string>Schedule the prayer alarms you enable, so your iPhone can alert you at prayer time.</string>

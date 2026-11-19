@@ -26,6 +26,7 @@
     <application
         android:name="${applicationName}"
         android:label="NL Prayer Times"
+        android:usesCleartextTraffic="false"
         android:icon="@mipmap/ic_launcher">
 
         <receiver
