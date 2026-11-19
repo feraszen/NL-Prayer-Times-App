@@ -23,6 +23,7 @@ class NotificationService {
   static const int asrId = 3;
   static const int maghribId = 4;
   static const int ishaId = 5;
+  static const int sunriseId = 6;
 
   final FlutterLocalNotificationsPlugin notifications =
       FlutterLocalNotificationsPlugin();
@@ -62,11 +63,50 @@ class NotificationService {
       'sound': permissions?.isSoundEnabled ?? false,
       'pending': pending
           .where(
-            (n) => n.id >= 1 && n.id <= 65 && n.id % 10 >= 1 && n.id % 10 <= 5,
+            (n) => n.id >= 1 && n.id <= 66 && n.id % 10 >= 1 && n.id % 10 <= 6,
           )
           .length,
       'alarmEnabled': await alarms.enabled(),
     };
+  }
+
+  // No custom sound: both platforms use their normal notification tone.
+  static const sunriseDetails = NotificationDetails(
+    android: AndroidNotificationDetails(
+      'sunrise_default_v1',
+      'Sunrise reminders',
+      channelDescription: 'Sunrise with the default notification sound',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      category: AndroidNotificationCategory.reminder,
+    ),
+    iOS: DarwinNotificationDetails(
+      presentAlert: true,
+      presentBanner: true,
+      presentList: true,
+      presentSound: true,
+      threadIdentifier: 'sunrise',
+    ),
+  );
+
+  Future<void> scheduleSunriseNotificationAtTime({
+    required int id,
+    required DateTime time,
+  }) async {
+    if (!time.isAfter(DateTime.now())) return;
+    final prefs = await SharedPreferences.getInstance();
+    final arabic = (prefs.getString('app_language') ?? 'ar') == 'ar';
+    await notifications.zonedSchedule(
+      id,
+      arabic ? 'الشروق' : 'Sunrise',
+      arabic ? 'حان وقت شروق الشمس.' : 'It is sunrise.',
+      tz.TZDateTime.from(time, tz.local),
+      sunriseDetails,
+      payload: jsonEncode({'kind': 'sunrise', 'audio': false}),
+      androidScheduleMode: await scheduleMode(),
+    );
   }
 
   static const prayerDetails = NotificationDetails(
@@ -374,6 +414,7 @@ class NotificationService {
   Future<void> scheduleDailyPrayerNotifications({
     required PrayerTimes prayerTimes,
     int dayOffset = 0,
+    bool sunriseEnabled = true,
     required bool fajrEnabled,
     required bool dhuhrEnabled,
     required bool asrEnabled,
@@ -381,6 +422,12 @@ class NotificationService {
     required bool ishaEnabled,
   }) async {
     debugPrint('Scheduling daily prayer notifications...');
+    if (sunriseEnabled) {
+      await scheduleSunriseNotificationAtTime(
+        id: sunriseId + dayOffset * 10,
+        time: prayerTimes.sunrise.time,
+      );
+    }
 
     if (fajrEnabled) {
       await schedulePrayerNotificationAtTime(
@@ -462,7 +509,7 @@ class NotificationService {
     if (isIOS) await alarms.cancelPrayerAlarms();
     // Only our prayer IDs: diagnostic and other notifications remain intact.
     for (var day = 0; day < 7; day++) {
-      for (var prayer = 1; prayer <= 5; prayer++) {
+      for (var prayer = 1; prayer <= 6; prayer++) {
         await notifications.cancel(day * 10 + prayer);
       }
     }

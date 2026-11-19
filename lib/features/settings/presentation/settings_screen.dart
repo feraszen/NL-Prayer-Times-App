@@ -5,6 +5,7 @@ import '../../../core/services/ios_prayer_alarm_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../app/app_preferences.dart';
+import '../../prayer_times/domain/models/prayer_type.dart';
 import '../../../core/presentation/islamic_decoration.dart';
 import '../../../core/services/notification_service.dart';
 import '../../../core/services/custom_adhan_service.dart';
@@ -338,7 +339,12 @@ class _SettingsScreenState extends State<SettingsScreen>
                         for (final type in p.alerts.keys)
                           _switch(
                             CupertinoIcons.bell,
-                            p.prayerName(type),
+                            type == PrayerType.sunrise
+                                ? p.text(
+                                    'الشروق — صوت التنبيه العادي',
+                                    'Sunrise — default notification sound',
+                                  )
+                                : p.prayerName(type),
                             p.alerts[type]!,
                             native && p.notifications && !_busy
                                 ? (value) {
@@ -385,7 +391,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                       ),
                       _tile(
                         CupertinoIcons.calendar,
-                        p.text('الصلوات المجدولة', 'Scheduled prayers'),
+                        p.text('التنبيهات المجدولة', 'Scheduled reminders'),
                         '${_iosStatus['pending'] ?? 0}',
                         () => _run(() => _reschedule(p)),
                       ),
@@ -596,7 +602,7 @@ class _SettingsScreenState extends State<SettingsScreen>
                     _tile(
                       CupertinoIcons.info_circle,
                       p.text('عن التطبيق', 'About the app'),
-                      '1.1.1',
+                      '1.1.2',
                       () => _info(
                         p.text('عن التطبيق', 'About the app'),
                         'NL Prayer Times\nFeras Zen Alabdeen\n\n${p.text('مواقيت الصلاة واتجاه القبلة أينما كنت.', 'Prayer times and Qibla wherever you are.')}',

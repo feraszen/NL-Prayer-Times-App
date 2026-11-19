@@ -16,7 +16,7 @@ store publishing are configured. Each build consumes the account's Mac minutes.
 4. If any step fails, share its error log. Simulator/native test success cannot
    be claimed until this workflow actually runs successfully on the Mac.
 5. After success, download the **IPA** directly (no Windows repacking needed),
-   re-sign/install it with your existing Sideloadly setup, and confirm **1.1.1**
+   re-sign/install it with your existing Sideloadly setup, and confirm **1.1.2**
    in About. Neither artifact can be installed directly without Apple signing.
    TestFlight still requires appropriate Apple Developer membership/signing.
 
@@ -28,7 +28,7 @@ conditionally compiled with a supported SDK and is available on iOS 26+.
 
 - Enable **Prayer notifications** and allow alert/sound permission. The same
   shared prayer source/adjustments used on Home schedule the five prayers.
-- Seven separate daily schedules are calculated (up to 35 pending notifications,
+- Seven separate daily schedules are calculated (up to 42 pending notifications,
   below iOS's 64 pending-notification limit). Sunrise is never notified. Open the
   app at least weekly to renew the horizon, and whenever the location changes.
 - A fresh source must resolve before existing scheduled reminders are cancelled.

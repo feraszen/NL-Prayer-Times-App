@@ -36,6 +36,7 @@ class PrayerNotificationScheduler {
       return;
     }
     await NotificationService.instance.prepareScheduling();
+    final sunrise = await settingsService.getSunriseNotification();
     final fajr = await settingsService.getFajrNotification();
     final dhuhr = await settingsService.getDhuhrNotification();
     final asr = await settingsService.getAsrNotification();
@@ -70,6 +71,7 @@ class PrayerNotificationScheduler {
       await NotificationService.instance.scheduleDailyPrayerNotifications(
         prayerTimes: days[day],
         dayOffset: day,
+        sunriseEnabled: sunrise,
         fajrEnabled: fajr,
         dhuhrEnabled: dhuhr,
         asrEnabled: asr,

@@ -67,6 +67,60 @@ void main() {
           return null;
         });
   });
+  test('sunrise uses normal sound and never adhan or AlarmKit', () async {
+    SharedPreferences.setMockInitialValues({
+      'notifications_enabled': true,
+      'adhan_enabled': false,
+      'custom_adhan_uri': 'content://media/audio/123',
+      'custom_adhan_token': 'custom',
+      'ios_prayer_alarms_enabled': true,
+    });
+    final time = DateTime.now().add(const Duration(hours: 1));
+    await NotificationService.instance.scheduleSunriseNotificationAtTime(
+      id: 6,
+      time: time,
+    );
+    final n =
+        calls.singleWhere((c) => c.method == 'zonedSchedule').arguments as Map;
+    final details = n['platformSpecifics'] as Map;
+    expect(details['sound'], isNull);
+    expect(details['presentSound'], true);
+    expect(details['categoryIdentifier'], isNull);
+    expect(alarmCalls.where((c) => c.method == 'schedule'), isEmpty);
+    expect(n['payload'], contains('sunrise'));
+    calls.clear();
+    await NotificationService.instance.scheduleSunriseNotificationAtTime(
+      id: 6,
+      time: DateTime.now().subtract(const Duration(minutes: 1)),
+    );
+    expect(calls, isEmpty);
+  });
+
+  test('sunrise is included in the schedule and can be disabled', () async {
+    SharedPreferences.setMockInitialValues({'notifications_enabled': true});
+    await scheduler.scheduleNotifications(location: location);
+    var scheduled = calls
+        .where((c) => c.method == 'zonedSchedule')
+        .map((c) => c.arguments as Map)
+        .toList();
+    expect(
+      scheduled.where((n) => (n['id'] as int) % 10 == 6).length,
+      inInclusiveRange(6, 7),
+    );
+    expect(scheduled.length, lessThanOrEqualTo(42));
+    await (await SharedPreferences.getInstance()).setBool(
+      'sunrise_notification',
+      false,
+    );
+    calls.clear();
+    await scheduler.scheduleNotifications(location: location);
+    scheduled = calls
+        .where((c) => c.method == 'zonedSchedule')
+        .map((c) => c.arguments as Map)
+        .toList();
+    expect(scheduled.where((n) => (n['id'] as int) % 10 == 6), isEmpty);
+  });
+
   tearDown(() {
     debugDefaultTargetPlatformOverride = null;
     final messenger =
@@ -106,6 +160,7 @@ void main() {
       SharedPreferences.setMockInitialValues({
         'notifications_enabled': true,
         'fajr_notification': false,
+        'sunrise_notification': false,
       });
       await scheduler.scheduleNotifications(location: location);
       final scheduled = calls
@@ -226,7 +281,7 @@ void main() {
           .where((c) => c.method == 'cancel')
           .map((c) => c.arguments as int)
           .toSet();
-      expect(ids.length, 35);
+      expect(ids.length, 42);
       expect(ids, containsAll([1, 5, 61, 65]));
       expect(ids, isNot(contains(5000)));
       expect(calls.where((c) => c.method == 'cancelAll'), isEmpty);

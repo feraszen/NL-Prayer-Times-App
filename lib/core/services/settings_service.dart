@@ -72,6 +72,13 @@ class SettingsService {
     return prefs.getBool(_notificationsKey) ?? false;
   }
 
+  Future<bool> getSunriseNotification() async {
+    return (await SharedPreferences.getInstance()).getBool(
+          'sunrise_notification',
+        ) ??
+        true;
+  }
+
   Future<void> saveFajrNotification(bool enabled) async {
     final prefs = await SharedPreferences.getInstance();
 

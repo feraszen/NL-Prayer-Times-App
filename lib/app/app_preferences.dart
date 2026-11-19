@@ -22,8 +22,7 @@ class AppPreferences extends ChangeNotifier {
       if (p != PrayerType.sunrise) p: 0,
   };
   final Map<PrayerType, bool> alerts = {
-    for (final p in PrayerType.values)
-      if (p != PrayerType.sunrise) p: true,
+    for (final p in PrayerType.values) p: true,
   };
   final SettingsService storage = SettingsService();
   bool get arabic => language == 'ar';

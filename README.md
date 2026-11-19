@@ -153,3 +153,14 @@ restricts redirects and removes unused iOS always-location declarations.
 This is not a certification against all vulnerabilities or device compromise.
 Android signing remains configured for local trials; production signing is still
 required before publishing. Rebuild/re-sign test artifacts to receive changes.
+
+## Sunrise reminder (1.1.2)
+
+Sunrise now has an individual notification toggle, enabled by default when
+master notifications are on. It uses the phone’s default notification tone on
+Android and iOS, independent of adhan audio, imported files, and iOS prayer
+alarms. Past sunrise times are skipped. The same seven-day scheduling window
+now contains at most 42 reminders; disabling notifications cancels sunrise too.
+The phone’s notification sound permissions, Silent/Focus modes and Android
+channel settings still apply. Rebuild and install the new app, then open it to
+refresh scheduled reminders.
