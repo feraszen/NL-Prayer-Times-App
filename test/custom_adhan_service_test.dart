@@ -23,6 +23,8 @@ void main() {
               'uri': 'content://media/audio/7',
               'token': 'seven',
               'path': '/app/files/notification_audio/seven.mp3',
+              'iosSound': 'seven_short.wav',
+              'iosAlarmSound': 'seven_full.wav',
             };
           });
       final previous = await audio.selection();
@@ -38,6 +40,8 @@ void main() {
         '/app/files/notification_audio/seven.mp3',
       );
       expect(saved[CustomAdhanService.nameKey], 'My adhan.mp3');
+      expect(saved[CustomAdhanService.iosSoundKey], 'seven_short.wav');
+      expect(saved[CustomAdhanService.iosAlarmSoundKey], 'seven_full.wav');
       await audio.save({});
       expect(await audio.selection(), isEmpty);
       await audio.restore(saved);

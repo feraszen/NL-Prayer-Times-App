@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../core/services/ios_prayer_alarm_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../app/app_preferences.dart';
@@ -21,16 +22,36 @@ class SettingsScreen extends StatefulWidget {
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _SettingsScreenState extends State<SettingsScreen>
+    with WidgetsBindingObserver {
   final _player = AudioPlayer();
   StreamSubscription<void>? _completion;
   bool _playing = false, _busy = false;
   double _previewVolume = .7;
   String? _previewPath, _audioName;
   final _audio = CustomAdhanService();
+  Map<String, dynamic> _iosStatus = {};
+  Future<void> _refreshIOSStatus() async {
+    if (!NotificationService.isIOS) return;
+    try {
+      final status = await NotificationService.instance.iosStatus();
+      if (mounted) setState(() => _iosStatus = status);
+    } catch (e) {
+      if (mounted) setState(() => _iosStatus = {'error': e.toString()});
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) _refreshIOSStatus();
+  }
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    NotificationService.instance.statusRevision.addListener(_refreshIOSStatus);
+    _refreshIOSStatus();
     _loadAudio();
     _completion = _player.onPlayerComplete.listen((_) {
       if (mounted) setState(() => _playing = false);
@@ -50,7 +71,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _chooseAudio(AppPreferences p) => _run(() async {
     final files = await FilePicker.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['mp3', 'wav', 'm4a', 'ogg'],
+      allowedExtensions: NotificationService.isIOS
+          ? ['mp3', 'wav', 'm4a', 'caf', 'aiff', 'aif']
+          : ['mp3', 'wav', 'm4a', 'ogg'],
     );
     if (files.isEmpty) return;
     final file = files.first;
@@ -89,6 +112,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    NotificationService.instance.statusRevision.removeListener(
+      _refreshIOSStatus,
+    );
     _completion?.cancel();
     _player.dispose();
     super.dispose();
@@ -109,6 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       );
     } finally {
+      await _refreshIOSStatus();
       if (mounted) setState(() => _busy = false);
     }
   }
@@ -188,10 +216,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       p.text('الأذان', 'Adhan sound'),
                       p.adhanEnabled,
                       native && !_busy
-                          ? (value) => _run(() async {
-                              await p.setAdhan(value);
-                              await _reschedule(p);
-                            })
+                          ? (value) {
+                              final previous = p.adhanEnabled;
+                              _changeTiming(
+                                () => p.setAdhan(value),
+                                () => p.setAdhan(previous),
+                                p,
+                              );
+                            }
                           : null,
                     ),
                     _tile(
@@ -215,10 +247,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Padding(
                       padding: const EdgeInsets.all(16),
                       child: Text(
-                        p.text(
-                          'اضغط لاختيار ملف صوتي من هاتفك لجميع الصلوات. يُحفظ الملف للتنبيهات حتى بعد إغلاق التطبيق. يدعم MP3 وWAV وM4A وOGG حتى 50 ميغابايت. يتحكم Android بمستوى الصوت ومدة تشغيله.',
-                          'Tap to choose audio from your phone for all prayers. Audio is saved for alerts after closing the app. Supports MP3, WAV, M4A and OGG up to 50 MB. Android controls alert volume and playback duration.',
-                        ),
+                        NotificationService.isIOS
+                            ? p.text(
+                                'اختر الصوت من تطبيق الملفات. الإشعار العادي يستخدم أول 29 ثانية. لتشغيل الملف الكامل اضغط مطولًا على الإشعار واختر Play full adhan. خيار منبّه iOS أدناه يستخدم AlarmKit ويحتاج اختبار الصوت على الجهاز. يدعم MP3 وM4A وWAV وCAF وAIFF حتى 50 ميغابايت و10 دقائق.',
+                                'Choose audio from Files. Standard notifications use the first 29 seconds. Long-press a notification and choose Play full adhan for the complete file. iOS alarms below use AlarmKit and need device sound testing. Supports MP3, M4A, WAV, CAF and AIFF up to 50 MB and 10 minutes.',
+                              )
+                            : p.text(
+                                'اضغط لاختيار ملف صوتي من هاتفك لجميع الصلوات. يُحفظ الملف للتنبيهات حتى بعد إغلاق التطبيق. يدعم MP3 وWAV وM4A وOGG حتى 50 ميغابايت. يتحكم Android بمستوى الصوت ومدة تشغيله.',
+                                'Tap to choose audio from your phone for all prayers. Audio is saved for alerts after closing the app. Supports MP3, WAV, M4A and OGG up to 50 MB. Android controls alert volume and playback duration.',
+                              ),
                         style: const TextStyle(fontSize: 11),
                       ),
                     ),
@@ -277,10 +314,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       p.text('تنبيهات الصلاة', 'Prayer notifications'),
                       p.notifications,
                       native && !_busy
-                          ? (value) => _run(() async {
-                              await p.setNotifications(value);
-                              await _reschedule(p);
-                            })
+                          ? (value) {
+                              final previous = p.notifications;
+                              _changeTiming(
+                                () => p.setNotifications(value),
+                                () => p.setNotifications(previous),
+                                p,
+                              );
+                            }
                           : null,
                     ),
                     ExpansionTile(
@@ -300,22 +341,126 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             p.prayerName(type),
                             p.alerts[type]!,
                             native && p.notifications && !_busy
-                                ? (value) => _run(() async {
-                                    await p.setAlert(type, value);
-                                    await _reschedule(p);
-                                  })
+                                ? (value) {
+                                    final previous = p.alerts[type]!;
+                                    _changeTiming(
+                                      () => p.setAlert(type, value),
+                                      () => p.setAlert(type, previous),
+                                      p,
+                                    );
+                                  }
                                 : null,
                           ),
                       ],
                     ),
                   ]),
+                  if (NotificationService.isIOS) ...[
+                    _group([
+                      _tile(
+                        CupertinoIcons.bell,
+                        p.text(
+                          'إذن إشعارات iPhone',
+                          'iPhone notification permission',
+                        ),
+                        _iosStatus['notifications'] == true
+                            ? p.text('مسموح', 'Allowed')
+                            : p.text('غير مسموح', 'Not allowed'),
+                        () => _run(
+                          NotificationService.instance.requestPermissions,
+                        ),
+                      ),
+                      _tile(
+                        CupertinoIcons.speaker_2,
+                        p.text('صوت الإشعارات', 'Notification sounds'),
+                        _iosStatus['sound'] == true
+                            ? p.text('مسموح', 'Allowed')
+                            : p.text(
+                                'غير مسموح من النظام',
+                                'Disabled in system settings',
+                              ),
+                        () => _run(
+                          () => IOSPrayerAlarmService.channel
+                              .invokeMethod<void>('openSettings'),
+                        ),
+                      ),
+                      _tile(
+                        CupertinoIcons.calendar,
+                        p.text('الصلوات المجدولة', 'Scheduled prayers'),
+                        '${_iosStatus['pending'] ?? 0}',
+                        () => _run(() => _reschedule(p)),
+                      ),
+                      if (_iosStatus['available'] == true)
+                        _switch(
+                          CupertinoIcons.alarm,
+                          p.text(
+                            'استخدام منبّه iOS للصلاة',
+                            'Use iOS prayer alarms',
+                          ),
+                          _iosStatus['alarmEnabled'] == true,
+                          _busy
+                              ? null
+                              : (value) => _run(() async {
+                                  final alarms =
+                                      NotificationService.instance.alarms;
+                                  final previous = await alarms.enabled();
+                                  if (value &&
+                                      !await alarms.requestPermission()) {
+                                    throw StateError(
+                                      p.text(
+                                        'اسمح بالمنبّهات في إعدادات iPhone.',
+                                        'Allow alarms in iPhone Settings.',
+                                      ),
+                                    );
+                                  }
+                                  try {
+                                    await alarms.setEnabled(value);
+                                    await _reschedule(p);
+                                  } catch (_) {
+                                    await alarms.setEnabled(previous);
+                                    rethrow;
+                                  }
+                                }),
+                        ),
+                      _tile(
+                        CupertinoIcons.gear,
+                        p.text('إعدادات iPhone', 'iPhone settings'),
+                        '',
+                        () => _run(
+                          () => IOSPrayerAlarmService.channel
+                              .invokeMethod<void>('openSettings'),
+                        ),
+                      ),
+                    ]),
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        p.text(
+                          'افتح التطبيق أسبوعيًا لتجديد الجدولة. وضع المنبّه يتطلب إذنًا منفصلًا وقد يصدر صوتًا أثناء الصامت والتركيز؛ يتوقف من شاشة منبّه النظام. كتم الأذان في التطبيق يبقي الإشعار دون منبّه صوتي.',
+                          'Open the app weekly to renew the schedule. Alarm mode needs separate permission and can sound during Silent mode and Focus; stop it from the system alarm screen. Muting adhan keeps a silent notification.',
+                        ),
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ),
+                    if (NotificationService.instance.lastPreparationError !=
+                            null ||
+                        _iosStatus['error'] != null)
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Text(
+                          '${p.text('لم تكتمل جدولة التنبيهات أو تهيئة الصوت', 'Alert scheduling or audio preparation failed')}: ${NotificationService.instance.lastPreparationError ?? _iosStatus['error']}',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                        ),
+                      ),
+                  ],
                   if (!native)
                     Padding(
                       padding: const EdgeInsets.all(10),
                       child: Text(
                         p.text(
-                          'جدولة التنبيهات متاحة على Android في هذه النسخة.',
-                          'Scheduled notifications are available on Android in this version.',
+                          'جدولة التنبيهات متاحة على Android وiPhone.',
+                          'Scheduled notifications are available on Android and iPhone.',
                         ),
                         style: const TextStyle(fontSize: 12),
                       ),
@@ -451,7 +596,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _tile(
                       CupertinoIcons.info_circle,
                       p.text('عن التطبيق', 'About the app'),
-                      '1.0.4',
+                      '1.1.0',
                       () => _info(
                         p.text('عن التطبيق', 'About the app'),
                         'NL Prayer Times\nFeras Zen Alabdeen\n\n${p.text('مواقيت الصلاة واتجاه القبلة أينما كنت.', 'Prayer times and Qibla wherever you are.')}',

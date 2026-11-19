@@ -3,7 +3,7 @@ description: "NL Prayer Times App"
 
 publish_to: 'none'
 
-version: 1.0.4+6
+version: 1.1.0+7
 
 environment:
   sdk: ^3.12.2

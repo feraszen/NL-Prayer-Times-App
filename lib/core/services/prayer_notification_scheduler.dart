@@ -16,7 +16,15 @@ class PrayerNotificationScheduler {
   });
   static Future<void> _pendingUpdate = Future.value();
   Future<void> scheduleNotifications({required LocationData location}) {
-    final update = _pendingUpdate.then((_) => _schedule(location));
+    final update = _pendingUpdate.then((_) async {
+      try {
+        await _schedule(location);
+        NotificationService.instance.reportScheduled();
+      } catch (error) {
+        NotificationService.instance.reportSchedulingError(error);
+        rethrow;
+      }
+    });
     _pendingUpdate = update.catchError((Object error) {});
     return update;
   }
@@ -27,6 +35,7 @@ class PrayerNotificationScheduler {
       await NotificationService.instance.cancelPrayerNotifications();
       return;
     }
+    await NotificationService.instance.prepareScheduling();
     final fajr = await settingsService.getFajrNotification();
     final dhuhr = await settingsService.getDhuhrNotification();
     final asr = await settingsService.getAsrNotification();

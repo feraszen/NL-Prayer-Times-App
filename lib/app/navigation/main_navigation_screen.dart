@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../app_preferences.dart';
+import '../../core/services/adhan_playback_service.dart';
 import '../theme/app_colors.dart';
 import '../../features/home/presentation/home_screen_real.dart';
 import '../../features/settings/presentation/settings_screen.dart';
@@ -29,11 +30,56 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       CupertinoIcons.gear_alt,
     ];
     return Scaffold(
-      body: switch (currentIndex) {
-        0 => HomeScreenReal(onSettings: () => select(2)),
-        1 => const QiblaRealScreen(),
-        _ => const SettingsScreen(),
-      },
+      body: Column(
+        children: [
+          ValueListenableBuilder<bool>(
+            valueListenable: AdhanPlaybackService.instance.playing,
+            builder: (context, playing, _) => playing
+                ? SafeArea(
+                    bottom: false,
+                    child: ListTile(
+                      title: Text(
+                        p.text('الأذان قيد التشغيل', 'Adhan is playing'),
+                      ),
+                      trailing: IconButton(
+                        tooltip: p.text('إيقاف', 'Stop'),
+                        icon: const Icon(CupertinoIcons.stop_circle),
+                        onPressed: AdhanPlaybackService.instance.stop,
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
+          ),
+          ValueListenableBuilder<String?>(
+            valueListenable: AdhanPlaybackService.instance.error,
+            builder: (context, error, _) => error == null
+                ? const SizedBox.shrink()
+                : SafeArea(
+                    bottom: false,
+                    child: ListTile(
+                      title: Text(
+                        p.text(
+                          'تعذر تشغيل الصوت. اختر ملفًا متاحًا من الإعدادات.',
+                          'Audio unavailable. Choose a local file in Settings.',
+                        ),
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(CupertinoIcons.xmark),
+                        onPressed: () =>
+                            AdhanPlaybackService.instance.error.value = null,
+                      ),
+                    ),
+                  ),
+          ),
+          Expanded(
+            child: switch (currentIndex) {
+              0 => HomeScreenReal(onSettings: () => select(2)),
+              1 => const QiblaRealScreen(),
+              _ => const SettingsScreen(),
+            },
+          ),
+        ],
+      ),
       bottomNavigationBar: SafeArea(
         top: false,
         child: Container(

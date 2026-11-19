@@ -21,9 +21,13 @@ workflows:
         script: flutter analyze --no-pub
       - name: Run Flutter tests
         script: flutter test --no-pub
+      - name: Test iOS audio conversion on Simulator
+        script: bash scripts/test_ios_native.sh
       - name: Build unsigned iOS app and collect artifact
         script: bash scripts/build_ios_unsigned.sh
     artifacts:
       - build/ios/unsigned/*.zip
+      - build/ios/unsigned/*.ipa
+      - build/ios/native-tests/*.log
       - build/ios/unsigned/README.txt
       - /tmp/xcodebuild_logs/*.log

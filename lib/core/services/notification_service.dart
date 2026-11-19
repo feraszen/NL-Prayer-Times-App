@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,6 +8,8 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import 'custom_adhan_service.dart';
+import 'ios_prayer_alarm_service.dart';
+import 'adhan_playback_service.dart';
 
 import '../../features/prayer_times/domain/models/prayer_times.dart';
 
@@ -24,7 +28,46 @@ class NotificationService {
       FlutterLocalNotificationsPlugin();
 
   static bool get isSupported =>
-      !kIsWeb && defaultTargetPlatform == TargetPlatform.android;
+      !kIsWeb && (defaultTargetPlatform == TargetPlatform.android || isIOS);
+  static bool get isIOS =>
+      !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
+  String? lastPreparationError;
+  String? iosAudioPreparationError;
+  bool iosDefaultSoundReady = false;
+  final statusRevision = ValueNotifier<int>(0);
+  final alarms = IOSPrayerAlarmService();
+  DateTime? lastScheduledAt;
+  void reportSchedulingError(Object error) {
+    lastPreparationError = error.toString();
+    statusRevision.value++;
+  }
+
+  void reportScheduled() {
+    lastPreparationError = iosAudioPreparationError;
+    lastScheduledAt = DateTime.now();
+    statusRevision.value++;
+  }
+
+  Future<Map<String, dynamic>> iosStatus() async {
+    final permissions = await notifications
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >()
+        ?.checkPermissions();
+    final pending = await notifications.pendingNotificationRequests();
+    final alarmState = await alarms.status();
+    return {
+      ...alarmState,
+      'notifications': permissions?.isEnabled ?? false,
+      'sound': permissions?.isSoundEnabled ?? false,
+      'pending': pending
+          .where(
+            (n) => n.id >= 1 && n.id <= 65 && n.id % 10 >= 1 && n.id % 10 <= 5,
+          )
+          .length,
+      'alarmEnabled': await alarms.enabled(),
+    };
+  }
 
   static const prayerDetails = NotificationDetails(
     android: AndroidNotificationDetails(
@@ -55,6 +98,26 @@ class NotificationService {
   );
   Future<NotificationDetails> _details() async {
     final prefs = await SharedPreferences.getInstance();
+    if (isIOS) {
+      final audible = prefs.getBool('adhan_enabled') ?? true;
+      final alarm = audible && await alarms.enabled();
+      return NotificationDetails(
+        iOS: DarwinNotificationDetails(
+          presentAlert: true,
+          presentBanner: true,
+          presentList: true,
+          presentSound: audible && !alarm,
+          sound: audible && !alarm
+              ? prefs.getString(CustomAdhanService.iosSoundKey) ??
+                    (iosDefaultSoundReady
+                        ? CustomAdhanService.defaultIOSSound
+                        : null)
+              : null,
+          categoryIdentifier: audible ? 'prayer_audio' : 'prayer_silent',
+          threadIdentifier: 'prayer_times',
+        ),
+      );
+    }
     if (!(prefs.getBool('adhan_enabled') ?? true)) return silentPrayerDetails;
     final uri = prefs.getString(CustomAdhanService.uriKey);
     final token = prefs.getString(CustomAdhanService.tokenKey);
@@ -106,15 +169,67 @@ class NotificationService {
       '@mipmap/ic_launcher',
     );
 
-    const settings = InitializationSettings(android: androidSettings);
+    final settings = InitializationSettings(
+      android: androidSettings,
+      iOS: DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+        notificationCategories: [
+          DarwinNotificationCategory(
+            'prayer_audio',
+            actions: [
+              DarwinNotificationAction.plain(
+                'PLAY_ADHAN',
+                'Play full adhan',
+                options: {DarwinNotificationActionOption.foreground},
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
 
-    await notifications.initialize(settings);
-
-    await requestPermissions();
+    await notifications.initialize(
+      settings,
+      onDidReceiveNotificationResponse: handleResponse,
+    );
+    if (isIOS) {
+      try {
+        await CustomAdhanService().prepareIOSDefaultSound();
+        iosDefaultSoundReady = true;
+      } catch (e) {
+        iosAudioPreparationError = 'Unable to prepare default iPhone audio: $e';
+        lastPreparationError = iosAudioPreparationError;
+        debugPrint(lastPreparationError);
+      }
+      final launch = await notifications.getNotificationAppLaunchDetails();
+      final response = launch?.notificationResponse;
+      if (launch?.didNotificationLaunchApp == true && response != null) {
+        handleResponse(response);
+      }
+    } else {
+      await requestPermissions();
+    }
   }
 
   Future<void> requestPermissions() async {
     if (!isSupported) return;
+    if (isIOS) {
+      final allowed = await notifications
+          .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin
+          >()
+          ?.requestPermissions(alert: true, badge: true, sound: true);
+      if (allowed != true) {
+        throw PlatformException(
+          code: 'IOS_NOTIFICATIONS_DENIED',
+          message:
+              'Enable notifications for NL Prayer Times in iPhone Settings',
+        );
+      }
+      return;
+    }
     await notifications
         .resolvePlatformSpecificImplementation<
           AndroidFlutterLocalNotificationsPlugin
@@ -134,6 +249,7 @@ class NotificationService {
       'NL Prayer Times',
       'Prayer notification and adhan test.',
       await _details(),
+      payload: await _payload(),
     );
   }
 
@@ -154,6 +270,7 @@ class NotificationService {
       'This notification was scheduled 30 seconds ago.',
       scheduledTime,
       await _details(),
+      payload: await _payload(),
       androidScheduleMode: await scheduleMode(),
     );
 
@@ -165,7 +282,13 @@ class NotificationService {
     required String title,
     required String body,
   }) async {
-    await notifications.show(id, title, body, await _details());
+    await notifications.show(
+      id,
+      title,
+      body,
+      await _details(),
+      payload: await _payload(),
+    );
   }
 
   Future<void> schedulePrayerNotificationAtTime({
@@ -180,8 +303,72 @@ class NotificationService {
       "It's time for $prayerName prayer.",
       tz.TZDateTime.from(prayerTime, tz.local),
       await _details(),
+      payload: await _payload(),
       androidScheduleMode: await scheduleMode(),
     );
+    if (isIOS && await alarms.enabled()) {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool('adhan_enabled') ?? true) {
+        await alarms.schedule(
+          id: id,
+          title: '$prayerName Prayer',
+          time: prayerTime,
+          sound:
+              prefs.getString(CustomAdhanService.iosAlarmSoundKey) ??
+              CustomAdhanService.defaultIOSAlarmSound,
+        );
+      }
+    }
+  }
+
+  void handleResponse(NotificationResponse response) {
+    if (!isIOS || response.actionId != 'PLAY_ADHAN') return;
+    try {
+      final payload = jsonDecode(response.payload ?? '{}');
+      if (payload is Map &&
+          payload['kind'] == 'prayer' &&
+          payload['audio'] == true) {
+        AdhanPlaybackService.instance.play();
+      }
+    } catch (_) {
+      /* Other applications' or malformed payloads never play audio. */
+    }
+  }
+
+  Future<String> _payload() async => jsonEncode({
+    'kind': 'prayer',
+    'audio':
+        (await SharedPreferences.getInstance()).getBool('adhan_enabled') ??
+        true,
+  });
+
+  Future<void> prepareScheduling() async {
+    if (!isIOS) return;
+    final permissions = await notifications
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >()
+        ?.checkPermissions();
+    if (permissions?.isEnabled != true) {
+      throw PlatformException(
+        code: 'IOS_NOTIFICATIONS_DENIED',
+        message: 'Enable notifications in iPhone Settings',
+      );
+    }
+    final prefs = await SharedPreferences.getInstance();
+    if (await alarms.enabled() && (prefs.getBool('adhan_enabled') ?? true)) {
+      final state = await alarms.status();
+      if (state['available'] != true || state['authorized'] != true) {
+        throw PlatformException(
+          code: 'IOS_ALARMS_DENIED',
+          message: 'Allow prayer alarms in Settings or turn off iOS alarms',
+        );
+      }
+      if (prefs.getString(CustomAdhanService.iosAlarmSoundKey) == null &&
+          !iosDefaultSoundReady) {
+        throw StateError('iPhone alarm audio is not ready. Reopen the app.');
+      }
+    }
   }
 
   Future<void> scheduleDailyPrayerNotifications({
@@ -272,6 +459,7 @@ class NotificationService {
 
   Future<void> cancelPrayerNotifications() async {
     if (!isSupported) return;
+    if (isIOS) await alarms.cancelPrayerAlarms();
     // Only our prayer IDs: diagnostic and other notifications remain intact.
     for (var day = 0; day < 7; day++) {
       for (var prayer = 1; prayer <= 5; prayer++) {

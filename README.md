@@ -42,8 +42,9 @@ flutter run
   The saved audio must not be deleted from the phone's Notifications folder.
 - Android 7–9 uses a restricted FileProvider with read grants to the system
   notification player. Test audio delivery and reboot behavior on older devices.
-- Notification support in this version is Android only. Other platforms can
-  open the app without initializing Android notification services.
+- Native prayer notifications are supported on Android and iPhone in 1.1.0.
+  See the iOS guide below for permissions, short notification audio, full playback
+  and the optional AlarmKit mode. Web/desktop do not schedule mobile alerts.
 
 ### Physical device acceptance check
 
@@ -127,10 +128,18 @@ not an official historical timetable archive or an iqama synchronization service
 The source requires Internet access when a requested date has not been saved.
 After selecting Al-Falah, leave manual adjustments at zero to follow it directly.
 
-## iOS compilation on Codemagic
+## iOS testing on Codemagic
 
-Use the manual `ios-unsigned` workflow in `codemagic.yaml` to check native iPhone
-compilation on a cloud Mac without signing credentials. See
-[the iOS build guide](docs/IOS_CODEMAGIC.md). The resulting unsigned `.app` ZIP
-cannot be installed on an iPhone or sent to TestFlight without Apple signing.
-Android-only prayer alerts and custom notification audio still need iOS support.
+Use the manual `ios-unsigned` workflow in `codemagic.yaml` for native Simulator
+conversion tests and an unsigned iPhone release build on a cloud Mac. See
+[the iOS build and physical-device acceptance guide](docs/IOS_CODEMAGIC.md).
+Artifacts include an explicitly unsigned IPA for re-signing and the app ZIP;
+neither installs directly or uploads to TestFlight without Apple signing.
+
+Version 1.1.0 enables iOS prayer notification permission/scheduling and imports
+native audio from Files. Ordinary notifications use a 29-second WAV; an explicit
+notification action plays the full original with an in-app Stop control.
+An optional AlarmKit mode on iOS 26+ supplies the full selected sound to system
+prayer alarms. Its actual duration, custom audio and lock-screen delivery must
+be tested on the phone before claiming full background adhan or store readiness.
+The prior Audio & testing options section remains removed.
